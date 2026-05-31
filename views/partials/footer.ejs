@@ -1,0 +1,47 @@
+<%
+  const footerContact = typeof contact !== 'undefined' ? contact : {
+    address: 'Dobrodružná 747, Liberec XXV, 463 12',
+    phone: '+420 730 807 738',
+    email: 'jachym@sulovsky.com',
+    facebook: 'https://facebook.com/',
+    instagram: 'https://instagram.com/',
+    linkedin: 'https://linkedin.com/'
+  };
+%>
+<footer class="site-footer">
+  <div class="footer-grid">
+    <div>
+      <a class="brand footer-brand" href="/">
+        <span class="brand-mark">D</span>
+        <span>Drápal Real Estate</span>
+      </a>
+      <p>Profesionální realitní služby s důrazem na důvěru, prezentaci a výsledek.</p>
+    </div>
+    <div>
+      <h2>Rychlé odkazy</h2>
+      <a href="/">Nabídka</a>
+      <a href="/kontakt">Kontakt</a>
+      <a href="/admin">Administrace</a>
+    </div>
+    <div>
+      <h2>Kontakt</h2>
+      <p><%= footerContact.address %></p>
+      <a href="tel:<%= footerContact.phone.replace(/\s/g, '') %>"><%= footerContact.phone %></a>
+      <a href="mailto:<%= footerContact.email %>"><%= footerContact.email %></a>
+    </div>
+    <div>
+      <h2>Sociální sítě</h2>
+      <div class="socials">
+        <a href="<%= footerContact.facebook %>" target="_blank" rel="noreferrer">Facebook</a>
+        <a href="<%= footerContact.instagram %>" target="_blank" rel="noreferrer">Instagram</a>
+        <a href="<%= footerContact.linkedin %>" target="_blank" rel="noreferrer">LinkedIn</a>
+      </div>
+    </div>
+  </div>
+  <p class="copyright">© <%= new Date().getFullYear() %> Drápal Real Estate. Všechna práva vyhrazena.</p>
+</footer>
+<%- include('cookie-consent') %>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="/js/main.js"></script>
+</body>
+</html>

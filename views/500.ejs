@@ -1,0 +1,11 @@
+<%- include('partials/head') %>
+<%- include('partials/header') %>
+<main class="section not-found">
+  <h1>Něco se nepovedlo</h1>
+  <p>Server narazil na chybu při zpracování požadavku.</p>
+  <% if (error) { %>
+    <div class="flash error"><%= error %></div>
+  <% } %>
+  <a class="button" href="/">Zpět na nabídku</a>
+</main>
+<%- include('partials/footer') %>

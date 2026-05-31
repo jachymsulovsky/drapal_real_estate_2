@@ -1,0 +1,250 @@
+:root {
+    --cookie-bar-bg: #ffffff;
+    --cookie-bar-text: #1a1a1a;
+    --cookie-bar-primary: #1e3a8a; /* Deep blue often used in RE */
+    --cookie-bar-border: #e5e7eb;
+    --cookie-bar-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    --cookie-bar-transition: all 0.3s ease;
+}
+
+#cookie-consent-banner {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    right: 20px;
+    z-index: 10000;
+    background: var(--cookie-bar-bg);
+    color: var(--cookie-bar-text);
+    padding: 24px;
+    border-radius: 12px;
+    box-shadow: var(--cookie-bar-shadow);
+    display: none;
+    border: 1px solid var(--cookie-bar-border);
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+#cookie-consent-banner.show {
+    display: block;
+    animation: slideUp 0.5s ease-out;
+}
+
+@keyframes slideUp {
+    from { transform: translateY(100%); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+.cookie-content h3 {
+    margin-top: 0;
+    margin-bottom: 12px;
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+.cookie-content p {
+    margin-bottom: 20px;
+    line-height: 1.6;
+    font-size: 0.95rem;
+}
+
+.cookie-content a {
+    color: var(--cookie-bar-primary);
+    text-decoration: underline;
+}
+
+.cookie-buttons {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.cookie-btn {
+    padding: 10px 24px;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--cookie-bar-transition);
+    border: 2px solid var(--cookie-bar-primary);
+    font-size: 0.95rem;
+    flex: 1;
+    min-width: 140px;
+    text-align: center;
+}
+
+.cookie-btn-primary {
+    background: var(--cookie-bar-primary);
+    color: white;
+}
+
+.cookie-btn-secondary {
+    background: transparent;
+    color: var(--cookie-bar-primary);
+}
+
+.cookie-btn-settings {
+    border-color: transparent;
+    text-decoration: underline;
+    flex: none;
+    width: auto;
+}
+
+.cookie-btn:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+}
+
+/* Modal Settings */
+#cookie-settings-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 10001;
+    padding: 20px;
+}
+
+#cookie-settings-modal.show {
+    display: flex;
+}
+
+.modal-content {
+    background: white;
+    padding: 32px;
+    border-radius: 12px;
+    max-width: 600px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.cookie-setting-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 16px 0;
+    border-bottom: 1px solid var(--cookie-bar-border);
+}
+
+.setting-info {
+    padding-right: 20px;
+}
+
+.setting-info h4 {
+    margin: 0 0 4px 0;
+}
+
+.setting-info p {
+    margin: 0;
+    font-size: 0.85rem;
+    color: #666;
+}
+
+/* Switch styling */
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 48px;
+    height: 24px;
+    flex-shrink: 0;
+}
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: .4s;
+    border-radius: 24px;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+}
+
+input:checked + .slider {
+    background-color: var(--cookie-bar-primary);
+}
+
+input:checked + .slider:before {
+    transform: translateX(24px);
+}
+
+input:disabled + .slider {
+    background-color: #e5e7eb;
+    cursor: not-allowed;
+}
+
+/* Trigger Icon */
+#cookie-consent-trigger {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    width: 44px;
+    height: 44px;
+    background: var(--cookie-bar-primary);
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    z-index: 9999;
+    color: white;
+    transition: var(--cookie-bar-transition);
+}
+
+#cookie-consent-trigger:hover {
+    transform: scale(1.1);
+}
+
+/* Maps Placeholder */
+.google-maps-placeholder {
+    width: 100%;
+    height: 400px;
+    background: #f3f4f6;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 20px;
+    border: 2px dashed #cbd5e1;
+    border-radius: 8px;
+    gap: 16px;
+}
+
+.google-maps-placeholder p {
+    max-width: 400px;
+    color: #4b5563;
+}
+
+@media (max-width: 640px) {
+    .cookie-buttons {
+        flex-direction: column;
+    }
+    .cookie-btn {
+        width: 100%;
+    }
+}

@@ -1,0 +1,66 @@
+<%- include('../partials/admin-head') %>
+<%- include('../partials/admin-nav') %>
+<section class="admin-header">
+  <div>
+    <p class="eyebrow">Nastavení</p>
+    <h1>Kontakty</h1>
+  </div>
+</section>
+
+<form class="admin-form" method="post" action="/admin/contacts" enctype="multipart/form-data">
+  <div class="form-grid">
+    <label>Adresa kanceláře<input name="address" value="<%= contact.address %>" required></label>
+    <label>Telefon<input name="phone" value="<%= contact.phone %>" required></label>
+    <label>E-mail<input type="email" name="email" value="<%= contact.email %>" required></label>
+    <label>Otevírací doba<input name="opening_hours" value="<%= contact.opening_hours %>" required></label>
+    <label>Facebook<input type="url" name="facebook" value="<%= contact.facebook %>" required></label>
+    <label>Instagram<input type="url" name="instagram" value="<%= contact.instagram %>" required></label>
+    <label>LinkedIn<input type="url" name="linkedin" value="<%= contact.linkedin %>" required></label>
+    <label>GPS lat<input type="number" step="0.000001" name="lat" value="<%= contact.lat %>" required></label>
+    <label>GPS lng<input type="number" step="0.000001" name="lng" value="<%= contact.lng %>" required></label>
+  </div>
+
+  <h2>Makléři</h2>
+  <% agents.forEach((agent) => { %>
+    <section class="admin-card agent-editor">
+      <div class="agent-editor-header">
+        <h3><%= agent.name %></h3>
+        <button class="button small danger" type="submit" form="delete-agent-<%= agent.id %>">Smazat profil</button>
+      </div>
+      <input type="hidden" name="agent_id" value="<%= agent.id %>">
+      <div class="form-grid">
+        <label>Jméno<input name="agent_name_<%= agent.id %>" value="<%= agent.name %>" required></label>
+        <label>Pozice<input name="agent_role_<%= agent.id %>" value="<%= agent.role %>" required></label>
+        <label>Telefon<input name="agent_phone_<%= agent.id %>" value="<%= agent.phone %>" required></label>
+        <label>E-mail<input type="email" name="agent_email_<%= agent.id %>" value="<%= agent.email %>" required></label>
+        <label>Fotografie URL<input name="agent_photo_<%= agent.id %>" value="<%= agent.photo_url %>" required></label>
+        <label>Nahrát novou fotografii<input type="file" name="agent_photo_file_<%= agent.id %>" accept="image/*"></label>
+      </div>
+      <label>Bio<textarea name="agent_bio_<%= agent.id %>" required><%= agent.bio %></textarea></label>
+    </section>
+  <% }) %>
+
+  <h2>Přidat makléře</h2>
+  <section class="admin-card agent-editor">
+    <div class="form-grid">
+      <label>Jméno<input name="new_agent_name"></label>
+      <label>Pozice<input name="new_agent_role"></label>
+      <label>Telefon<input name="new_agent_phone"></label>
+      <label>E-mail<input type="email" name="new_agent_email"></label>
+      <label>Fotografie URL<input name="new_agent_photo"></label>
+      <label>Nahrát fotografii<input type="file" name="new_agent_photo_file" accept="image/*"></label>
+    </div>
+    <label>Bio<textarea name="new_agent_bio"></textarea></label>
+  </section>
+
+  <button class="button" type="submit">Uložit kontakty</button>
+</form>
+<% agents.forEach((agent) => { %>
+  <form
+    id="delete-agent-<%= agent.id %>"
+    method="post"
+    action="/admin/contacts/agents/<%= agent.id %>/delete"
+    data-confirm="Smazat profil makléře?"
+  ></form>
+<% }) %>
+<%- include('../partials/admin-foot') %>

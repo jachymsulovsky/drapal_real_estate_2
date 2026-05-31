@@ -1,0 +1,14 @@
+<header class="site-header">
+  <a class="brand" href="/" aria-label="Drápal Real Estate">
+    <span class="brand-mark">D</span>
+    <span>Drápal Real Estate</span>
+  </a>
+  <nav class="main-nav" aria-label="Hlavní menu">
+    <a class="<%= currentPath === '/' ? 'active' : '' %>" href="/">Nemovitosti</a>
+    <a class="<%= currentPath === '/kontakt' ? 'active' : '' %>" href="/kontakt">Kontakt</a>
+    <button class="icon-button" type="button" data-theme-toggle aria-label="Přepnout režim">◐</button>
+  </nav>
+</header>
+<% if (flash) { %>
+  <div class="flash <%= flash.type %>"><%= flash.message %></div>
+<% } %>

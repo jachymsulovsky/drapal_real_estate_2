@@ -1,0 +1,36 @@
+<%- include('../partials/admin-head') %>
+<%- include('../partials/admin-nav') %>
+<section class="admin-header">
+  <div>
+    <p class="eyebrow">Mini CRM</p>
+    <h1>Dashboard</h1>
+  </div>
+  <button class="icon-button" type="button" data-theme-toggle aria-label="Přepnout režim">◐</button>
+</section>
+
+<section class="stats-grid">
+  <div><span>Nemovitosti</span><strong><%= stats.properties %></strong></div>
+  <div><span>Poptávky celkem</span><strong><%= stats.inquiries %></strong></div>
+  <div><span>Nevyřízené</span><strong><%= stats.openInquiries %></strong></div>
+  <div><span>Prodáno</span><strong><%= stats.soldProperties %></strong></div>
+</section>
+
+<section class="admin-card">
+  <h2>Poslední poptávky</h2>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Jméno</th><th>Předmět</th><th>Stav</th><th>Datum</th></tr></thead>
+      <tbody>
+        <% recentInquiries.forEach((item) => { %>
+          <tr>
+            <td><%= item.name %></td>
+            <td><%= item.subject %></td>
+            <td><span class="badge"><%= item.handled ? 'Vyřízeno' : 'Nové' %></span></td>
+            <td><%= item.created_at %></td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+</section>
+<%- include('../partials/admin-foot') %>

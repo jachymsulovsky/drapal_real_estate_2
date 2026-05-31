@@ -1,0 +1,58 @@
+<%- include('partials/head') %>
+<%- include('partials/header') %>
+
+<main class="detail-page">
+  <section class="detail-hero">
+    <div>
+      <p class="eyebrow"><%= property.status %></p>
+      <h1><%= property.title %></h1>
+      <p><%= property.address %></p>
+    </div>
+    <strong><%= property.price.toLocaleString('cs-CZ') %> Kč</strong>
+  </section>
+
+  <section class="gallery">
+    <% images.forEach((image) => { %>
+      <img src="<%= image.image_url %>" alt="<%= image.alt %>">
+    <% }) %>
+  </section>
+
+  <section class="detail-layout">
+    <article>
+      <h2>Popis</h2>
+      <p><%= property.description %></p>
+      <div class="spec-grid">
+        <div><span>Cena</span><strong><%= property.price.toLocaleString('cs-CZ') %> Kč</strong></div>
+        <div><span>Příslušenství</span><strong><%= property.accessories %></strong></div>
+        <div><span>Energetická náročnost</span><strong><%= property.energy_rating %></strong></div>
+        <div><span>Stavba</span><strong><%= property.construction %></strong></div>
+        <div><span>Infrastruktura</span><strong><%= property.infrastructure %></strong></div>
+        <div><span>Plocha</span><strong><%= property.area %></strong></div>
+        <div><span>Vlastnictví</span><strong><%= property.ownership %></strong></div>
+        <div><span>Ostatní</span><strong><%= property.other %></strong></div>
+        <div><span>Historie</span><strong><%= property.history %></strong></div>
+      </div>
+      <div class="map" data-map data-lat="<%= property.lat %>" data-lng="<%= property.lng %>" data-title="<%= property.title %>"></div>
+    </article>
+
+    <aside class="contact-panel">
+      <img src="<%= property.agent_photo %>" alt="<%= property.agent_name %>">
+      <h2><%= property.agent_name %></h2>
+      <a href="tel:<%= property.agent_phone.replace(/\s/g, '') %>"><%= property.agent_phone %></a>
+      <a href="mailto:<%= property.agent_email %>"><%= property.agent_email %></a>
+      <p><%= property.address %></p>
+      <form class="stack-form" method="post" action="/kontakt">
+        <input type="hidden" name="property_id" value="<%= property.id %>">
+        <input type="hidden" name="redirect_to" value="/nemovitost/<%= property.slug %>">
+        <input name="name" placeholder="Jméno" required>
+        <input type="email" name="email" placeholder="E-mail" required>
+        <input name="phone" placeholder="Telefon" required>
+        <input name="subject" value="Dotaz k nemovitosti: <%= property.title %>" required>
+        <textarea name="message" placeholder="Zpráva" required minlength="10"></textarea>
+        <button class="button" type="submit">Odeslat dotaz</button>
+      </form>
+    </aside>
+  </section>
+</main>
+
+<%- include('partials/footer') %>

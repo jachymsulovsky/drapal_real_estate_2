@@ -1,0 +1,97 @@
+<!-- Google Tag Manager / Global site tag (gtag.js) initialization -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-0MGLFGSC9L"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+
+  if (!localStorage.getItem('cookie_consent_choice')) {
+    // Vychozi stav (denied)
+    gtag('consent', 'default', {
+      'analytics_storage': 'denied',
+      'ad_storage': 'denied',
+      'ad_user_data': 'denied',
+      'ad_personalization': 'denied'
+    });
+  } else {
+    const consent = JSON.parse(localStorage.getItem('cookie_consent_choice'));
+    gtag('consent', 'default', {
+      'ad_storage': consent.marketing ? 'granted' : 'denied',
+      'ad_user_data': consent.marketing ? 'granted' : 'denied',
+      'ad_personalization': consent.marketing ? 'granted' : 'denied',
+      'analytics_storage': consent.analytics ? 'granted' : 'denied'
+    });
+  }
+
+  gtag('js', new Date());
+  gtag('config', 'G-0MGLFGSC9L');
+</script>
+
+<!-- Cookie Banner HTML -->
+<div id="cookie-consent-banner">
+    <div class="cookie-content">
+        <h3>Informace o souborech cookies</h3>
+        <p>
+            Naše webové stránky používají cookies k zajištění správného fungování webu, personalizaci obsahu a reklam, poskytování funkcí sociálních médií a analýze návštěvnosti. 
+            Více informací naleznete v našich <a href="/ochrana-osobnich-udaju">Zásadách ochrany osobních údajů</a>.
+        </p>
+        <div class="cookie-buttons">
+            <button id="cookie-accept-all" class="cookie-btn cookie-btn-primary">Přijmout vše</button>
+            <button id="cookie-reject-all" class="cookie-btn cookie-btn-primary">Odmítnout vše</button>
+            <button id="cookie-open-settings" class="cookie-btn cookie-btn-settings">Nastavení</button>
+        </div>
+    </div>
+</div>
+
+<!-- Cookie Settings Modal -->
+<div id="cookie-settings-modal">
+    <div class="modal-content">
+        <h3>Nastavení cookies</h3>
+        <p>Zde si můžete přizpůsobit nastavení souborů cookies podle kategorií.</p>
+        
+        <div class="cookie-setting-item">
+            <div class="setting-info">
+                <h4>Nezbytné (vždy aktivní)</h4>
+                <p>Tyto cookies jsou nezbytné pro fungování webu a nelze je vypnout (např. zabezpečení, správa relace).</p>
+            </div>
+            <label class="switch">
+                <input type="checkbox" checked disabled>
+                <span class="slider"></span>
+            </label>
+        </div>
+
+        <div class="cookie-setting-item">
+            <div class="setting-info">
+                <h4>Analytické</h4>
+                <p>Pomáhají nám pochopit, jak návštěvníci používají web, abychom jej mohli vylepšovat.</p>
+            </div>
+            <label class="switch">
+                <input type="checkbox" id="cookie-opt-analytics">
+                <span class="slider"></span>
+            </label>
+        </div>
+
+        <div class="cookie-setting-item">
+            <div class="setting-info">
+                <h4>Marketingové</h4>
+                <p>Umožňují zobrazovat relevantní reklamy a měřit efektivitu kampaní. Jsou nutné také pro interaktivní mapy.</p>
+            </div>
+            <label class="switch">
+                <input type="checkbox" id="cookie-opt-marketing">
+                <span class="slider"></span>
+            </label>
+        </div>
+
+        <div class="cookie-buttons" style="margin-top: 24px;">
+            <button id="cookie-save-settings" class="cookie-btn cookie-btn-primary">Uložit nastavení</button>
+            <button id="cookie-close-modal" class="cookie-btn cookie-btn-secondary">Zavřít</button>
+        </div>
+    </div>
+</div>
+
+<!-- Floating Trigger Icon -->
+<div id="cookie-consent-trigger" title="Upravit nastavení cookies">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 1 0 10 10 4 4 0 0 1-5-5 4 4 0 0 1-5-5"></path><path d="M8.5 8.5v.01"></path><path d="M16 15.5v.01"></path><path d="M12 12v.01"></path><path d="M11 17v.01"></path><path d="M7 14v.01"></path></svg>
+</div>
+
+<link rel="stylesheet" href="/css/cookie-consent.css">
+<script src="/js/cookie-consent.js"></script>

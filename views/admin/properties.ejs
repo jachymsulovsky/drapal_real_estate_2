@@ -1,0 +1,35 @@
+<%- include('../partials/admin-head') %>
+<%- include('../partials/admin-nav') %>
+<section class="admin-header">
+  <div>
+    <p class="eyebrow">Správa nabídky</p>
+    <h1>Nemovitosti</h1>
+  </div>
+  <a class="button" href="/admin/properties/new">Přidat nemovitost</a>
+</section>
+
+<section class="admin-card">
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Název</th><th>Lokalita</th><th>Cena</th><th>Status</th><th>Makléř</th><th>Akce</th></tr></thead>
+      <tbody>
+        <% properties.forEach((property) => { %>
+          <tr>
+            <td><%= property.title %></td>
+            <td><%= property.location %></td>
+            <td><%= property.price.toLocaleString('cs-CZ') %> Kč</td>
+            <td><span class="badge"><%= property.status %></span></td>
+            <td><%= property.agent_name %></td>
+            <td class="actions">
+              <a class="button small secondary" href="/admin/properties/<%= property.id %>/edit">Upravit</a>
+              <form method="post" action="/admin/properties/<%= property.id %>/delete" data-confirm="Smazat nemovitost?">
+                <button class="button small danger" type="submit">Smazat</button>
+              </form>
+            </td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+</section>
+<%- include('../partials/admin-foot') %>

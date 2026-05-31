@@ -1,0 +1,71 @@
+<%- include('partials/head') %>
+<%- include('partials/header') %>
+
+<main class="contact-page">
+  <section class="section contact-intro">
+    <div>
+      <p class="eyebrow">Kontakt</p>
+      <h1><%= contact.office_name %></h1>
+      <p><%= contact.address %></p>
+      <div class="button-row">
+        <a class="button call-button" href="tel:<%= contact.phone.replace(/\s/g, '') %>">Zavolat</a>
+        <a class="button secondary" href="mailto:<%= contact.email %>">Napsat e-mail</a>
+      </div>
+    </div>
+    <div class="contact-facts">
+      <p><strong>Telefon</strong><br><%= contact.phone %></p>
+      <p><strong>E-mail</strong><br><%= contact.email %></p>
+      <p><strong>Otevírací doba</strong><br><%= contact.opening_hours %></p>
+    </div>
+  </section>
+
+  <section class="section two-column">
+    <div>
+      <h2>Kontaktní osoby</h2>
+      <div class="agent-grid">
+        <% agents.forEach((agent) => { %>
+          <article class="agent-card">
+            <img src="<%= agent.photo_url %>" alt="<%= agent.name %>">
+            <h3><%= agent.name %></h3>
+            <p><%= agent.role %></p>
+            <a href="tel:<%= agent.phone.replace(/\s/g, '') %>"><%= agent.phone %></a>
+            <a href="mailto:<%= agent.email %>"><%= agent.email %></a>
+          </article>
+        <% }) %>
+      </div>
+    </div>
+    <div>
+      <h2>Napište nám</h2>
+     <% if (flash && flash.type === 'success') { %>
+  <div class="flash success"><%= flash.message %></div>
+<% } %>
+
+<% if (flash && flash.type === 'error') { %>
+  <div class="flash error"><%= flash.message %></div>
+<% } %>
+      <form class="stack-form" method="post" action="/kontakt">
+        <input name="name" value="<%= form.name || '' %>" placeholder="Jméno" required>
+        <input type="email" name="email" value="<%= form.email || '' %>" placeholder="E-mail" required>
+        <input name="phone" value="<%= form.phone || '' %>" placeholder="Telefon" required>
+        <input name="subject" value="<%= form.subject || '' %>" placeholder="Předmět" required>
+        <textarea name="message" placeholder="Zpráva" required minlength="10"><%= form.message || '' %></textarea>
+        <button class="button" type="submit">Odeslat zprávu</button>
+      </form>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>Kde nás najdete</h2>
+    <div id="google-map-container" class="map large-map" style="min-height: 450px;"></div>
+    <script>
+    // Example of dynamic initialization
+    document.addEventListener('DOMContentLoaded', () => {
+        if (window.initGoogleMaps) {
+         window.initGoogleMaps('google-map-container', 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2524.316!2d15.056!3d50.767!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x470935b61a53b5f9%3A0x99cdace46aefe6d5!2sDobrodru%C5%BEn%C3%A1%202074%2F2%2C%20463%2012%20Liberec-Vesec!5e0!3m2!1scs!2scz!4v1780217264816!5m2!1scs!2scz');
+        }
+    });
+    </script>
+  </section>
+</main>
+
+<%- include('partials/footer') %>

@@ -1,0 +1,69 @@
+<%- include('partials/head') %>
+<%- include('partials/header') %>
+
+<main>
+  <section class="hero">
+    <div class="hero-content">
+      <p class="eyebrow">Realitní kancelář Brno</p>
+      <h1>Drápal Real Estate</h1>
+      <p>Moderní prodej, pronájem a investiční poradenství pro nemovitosti, které si zaslouží prvotřídní prezentaci.</p>
+      <a class="button" href="#nabidka">Prohlédnout nabídku</a>
+    </div>
+  </section>
+
+  <section class="section" id="nabidka">
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">Aktuální nabídka</p>
+        <h2>Vybrané nemovitosti</h2>
+      </div>
+    </div>
+
+    <form class="filter-bar" method="get" action="/">
+      <label>
+        Cena do
+        <input type="number" name="price" min="0" step="100000" value="<%= filters.price || '' %>" placeholder="Např. 12000000">
+      </label>
+      <label>
+        Lokalita
+        <select name="location">
+          <option value="">Všechny lokality</option>
+          <% locations.forEach((item) => { %>
+            <option value="<%= item.location %>" <%= filters.location === item.location ? 'selected' : '' %>><%= item.location %></option>
+          <% }) %>
+        </select>
+      </label>
+      <label>
+        Typ
+        <select name="type">
+          <option value="">Všechny typy</option>
+          <% types.forEach((item) => { %>
+            <option value="<%= item.type %>" <%= filters.type === item.type ? 'selected' : '' %>><%= item.type %></option>
+          <% }) %>
+        </select>
+      </label>
+      <button class="button" type="submit">Filtrovat</button>
+    </form>
+
+    <div class="property-grid">
+      <% properties.forEach((property) => { %>
+        <article class="property-card">
+          <a href="/nemovitost/<%= property.slug %>">
+            <img src="<%= property.image_url %>" alt="<%= property.title %>">
+            <div class="property-card-body">
+              <div class="status-row">
+                <span class="badge"><%= property.status %></span>
+                <span><%= property.type %></span>
+              </div>
+              <h3><%= property.title %></h3>
+              <p><%= property.location %> · <%= property.area %></p>
+              <strong><%= property.price.toLocaleString('cs-CZ') %> Kč</strong>
+            </div>
+          </a>
+        </article>
+      <% }) %>
+    </div>
+  </section>
+</main>
+
+<%- include('partials/footer') %>

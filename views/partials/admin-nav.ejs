@@ -1,0 +1,20 @@
+<aside class="admin-sidebar">
+  <a class="brand" href="/admin">
+    <span class="brand-mark">D</span>
+    <span>Admin</span>
+  </a>
+  <nav>
+    <a href="/admin">Dashboard</a>
+    <a href="/admin/properties">Nemovitosti</a>
+    <a href="/admin/inquiries">Poptávky</a>
+    <a href="/admin/contacts">Kontakty</a>
+    <a href="/" target="_blank">Veřejný web</a>
+  </nav>
+  <form method="post" action="/admin/logout">
+    <button class="button ghost" type="submit">Odhlásit</button>
+  </form>
+</aside>
+<main class="admin-main">
+  <% if (flash) { %>
+    <div class="flash <%= flash.type %>"><%= flash.message %></div>
+  <% } %>

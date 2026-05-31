@@ -1,0 +1,41 @@
+<%- include('../partials/admin-head') %>
+<%- include('../partials/admin-nav') %>
+<section class="admin-header">
+  <div>
+    <p class="eyebrow">CRM</p>
+    <h1>Poptávky</h1>
+  </div>
+</section>
+
+<form class="filter-bar admin-search" method="get" action="/admin/inquiries">
+  <label>Vyhledávání<input name="q" value="<%= search %>" placeholder="Jméno, e-mail, telefon, text"></label>
+  <button class="button" type="submit">Hledat</button>
+</form>
+
+<section class="admin-card">
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Stav</th><th>Kontakt</th><th>Předmět</th><th>Zpráva</th><th>Datum</th><th>Akce</th></tr></thead>
+      <tbody>
+        <% inquiries.forEach((item) => { %>
+          <tr>
+            <td><span class="badge"><%= item.handled ? 'Vyřízeno' : 'Nové' %></span></td>
+            <td><strong><%= item.name %></strong><br><%= item.email %><br><%= item.phone %></td>
+            <td><%= item.subject %></td>
+            <td><%= item.message %></td>
+            <td><%= item.created_at %></td>
+            <td class="actions">
+              <form method="post" action="/admin/inquiries/<%= item.id %>/toggle">
+                <button class="button small secondary" type="submit"><%= item.handled ? 'Vrátit' : 'Vyřídit' %></button>
+              </form>
+              <form method="post" action="/admin/inquiries/<%= item.id %>/delete" data-confirm="Smazat poptávku?">
+                <button class="button small danger" type="submit">Smazat</button>
+              </form>
+            </td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+</section>
+<%- include('../partials/admin-foot') %>
