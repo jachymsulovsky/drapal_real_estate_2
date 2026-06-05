@@ -1,0 +1,68 @@
+<%- include('../partials/admin-head') %>
+<%- include('../partials/admin-nav') %>
+<section class="admin-header">
+  <div>
+    <p class="eyebrow">Obsah webu</p>
+    <h1>Nastavení webu</h1>
+  </div>
+  <a class="button secondary" href="/" target="_blank">Zobrazit web</a>
+</section>
+
+<form class="admin-form" method="post" action="/admin/web" enctype="multipart/form-data">
+  <section class="admin-card">
+    <h2>Značka a SEO</h2>
+    <div class="form-grid">
+      <label>Název webu<input name="site_name" value="<%= settings.site_name || '' %>" required></label>
+      <label>Značka v ikoně<input name="brand_mark" value="<%= settings.brand_mark || '' %>" maxlength="3" required></label>
+    </div>
+    <label>Meta popis<textarea name="site_meta_description" required><%= settings.site_meta_description || '' %></textarea></label>
+  </section>
+
+  <section class="admin-card">
+    <h2>Úvodní část</h2>
+    <div class="form-grid">
+      <label>Malý nadpis<input name="home_hero_eyebrow" value="<%= settings.home_hero_eyebrow || '' %>" required></label>
+      <label>Hlavní nadpis<input name="home_hero_title" value="<%= settings.home_hero_title || '' %>" required></label>
+      <label>Text tlačítka<input name="home_hero_button" value="<%= settings.home_hero_button || '' %>" required></label>
+      <label>URL hero obrázku<input name="hero_image_url" value="<%= settings.hero_image_url || '' %>" required></label>
+      <label>Nahrát hero obrázek<input type="file" name="hero_image_file" accept="image/*"></label>
+    </div>
+    <% if (settings.hero_image_url) { %>
+      <img class="asset-preview" src="<%= settings.hero_image_url %>" alt="Hero obrázek">
+    <% } %>
+    <label>Úvodní text<textarea name="home_hero_text" required><%= settings.home_hero_text || '' %></textarea></label>
+  </section>
+
+  <section class="admin-card">
+    <h2>Nabídka a patička</h2>
+    <div class="form-grid">
+      <label>Malý nadpis nabídky<input name="home_offer_eyebrow" value="<%= settings.home_offer_eyebrow || '' %>" required></label>
+      <label>Nadpis nabídky<input name="home_offer_title" value="<%= settings.home_offer_title || '' %>" required></label>
+    </div>
+    <label>Text v patičce<textarea name="footer_description" required><%= settings.footer_description || '' %></textarea></label>
+  </section>
+
+  <section class="admin-card">
+    <h2>Kontaktní stránka</h2>
+    <div class="form-grid">
+      <label>Malý nadpis<input name="contact_eyebrow" value="<%= settings.contact_eyebrow || '' %>" required></label>
+      <label>Nadpis kontaktních osob<input name="contact_people_title" value="<%= settings.contact_people_title || '' %>" required></label>
+      <label>Nadpis formuláře<input name="contact_form_title" value="<%= settings.contact_form_title || '' %>" required></label>
+      <label>Nadpis mapy<input name="contact_map_title" value="<%= settings.contact_map_title || '' %>" required></label>
+    </div>
+    <label>Google Maps embed URL<textarea name="contact_map_embed_url"><%= settings.contact_map_embed_url || '' %></textarea></label>
+  </section>
+
+  <section class="admin-card">
+    <h2>Zásady ochrany osobních údajů</h2>
+    <div class="form-grid">
+      <label>Datum aktualizace<input name="privacy_updated_at" value="<%= settings.privacy_updated_at || '' %>" required></label>
+      <label>URL dokumentu ke stažení<input name="privacy_download_url" value="<%= settings.privacy_download_url || '' %>" required></label>
+      <label>Nahrát nový dokument<input type="file" name="privacy_document_file" accept=".doc,.docx,.pdf,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"></label>
+    </div>
+    <label>Text zásad<textarea class="large-textarea" name="privacy_content" required><%= settings.privacy_content || '' %></textarea></label>
+  </section>
+
+  <button class="button" type="submit">Uložit nastavení webu</button>
+</form>
+<%- include('../partials/admin-foot') %>

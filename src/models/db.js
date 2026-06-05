@@ -20,6 +20,88 @@ const officeContact = {
   lng: 15.078639444444
 };
 
+const defaultSiteSettings = {
+  site_name: 'Drápal Real Estate',
+  site_meta_description: 'Drápal Real Estate - moderní realitní kancelář pro prodej, pronájem a investice do nemovitostí.',
+  brand_mark: 'D',
+  home_hero_eyebrow: 'Realitní kancelář Brno',
+  home_hero_title: 'Drápal Real Estate',
+  home_hero_text: 'Moderní prodej, pronájem a investiční poradenství pro nemovitosti, které si zaslouží prvotřídní prezentaci.',
+  home_hero_button: 'Prohlédnout nabídku',
+  home_offer_eyebrow: 'Aktuální nabídka',
+  home_offer_title: 'Vybrané nemovitosti',
+  footer_description: 'Profesionální realitní služby s důrazem na důvěru, prezentaci a výsledek.',
+  contact_eyebrow: 'Kontakt',
+  contact_people_title: 'Kontaktní osoby',
+  contact_form_title: 'Napište nám',
+  contact_map_title: 'Kde nás najdete',
+  contact_map_embed_url: 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2524.316!2d15.056!3d50.767!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x470935b61a53b5f9%3A0x99cdace46aefe6d5!2sDobrodru%C5%BEn%C3%A1%202074%2F2%2C%20463%2012%20Liberec-Vesec!5e0!3m2!1scs!2scz!4v1780217264816!5m2!1scs!2scz',
+  hero_image_url: 'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1800&q=85',
+  privacy_updated_at: '5. června 2026',
+  privacy_download_url: '/docs/zasady-ochrany-osobnich-udaju.docx',
+  privacy_content: `1. Správce osobních údajů
+Správcem osobních údajů je Jáchym Sulovský, e-mail: jachym@sulovsky.com, telefon: +420 730 807 738.
+
+2. Rozsah a účel zpracování
+Vaše osobní údaje zpracovávám jako fyzická osoba v rámci vývoje a provozu developerského projektu "Drápal Real Estate". Údaje jsou zpracovávány za následujícími účely:
+
+Testování funkcionality a plnění technických požadavků: Zajištění provozu webových stránek a kontaktních formulářů.
+
+Komunikace s klienty: Vyřízení vašich dotazů a požadavků zaslaných prostřednictvím kontaktního formuláře.
+
+Analýza návštěvnosti: Zlepšování uživatelské zkušenosti a analýza výkonu webu (pomocí analytických nástrojů).
+
+3. Právní tituly pro zpracování
+Vaše údaje zpracovávám na základě těchto právních titulů:
+
+Oprávněný zájem (čl. 6 odst. 1 písm. f) GDPR): Zpracování nezbytné pro zajištění technického provozu webu a analýzu návštěvnosti.
+
+Jednání o smlouvě (čl. 6 odst. 1 písm. b) GDPR): Zpracování údajů, které mi dobrovolně poskytnete prostřednictvím kontaktního formuláře, za účelem vyřízení vašeho požadavku či dotazu.
+
+4. Doba uchování údajů
+Osobní údaje zpracovávám pouze po dobu nezbytnou pro naplnění účelu, ke kterému byly shromážděny:
+
+Údaje z kontaktních formulářů uchovávám po dobu nezbytnou k vyřízení vašeho požadavku, maximálně však po dobu 6 měsíců, nebude-li následně navázána obchodní spolupráce.
+
+Údaje získané pro analytické účely jsou uchovávány v souladu s nastavením analytických nástrojů třetích stran.
+
+5. Příjemci a zpracovatelé údajů
+Pro zajištění provozu webu využívám nástroje a služby třetích stran, které mohou mít přístup k určitým údajům:
+
+Google (Analytics, Maps): Analýza návštěvnosti a zobrazení mapových podkladů.
+
+Render: Hostingové služby a správa serverové infrastruktury.
+
+Brevo: Zajištění SMTP relé pro odesílání e-mailové komunikace z webu.
+
+S těmito poskytovateli mám zajištěn soulad s předpisy o ochraně osobních údajů. Sběr dat prostřednictvím cookies probíhá pouze na základě vašeho předchozího aktivního souhlasu uděleného prostřednictvím CookieConsent lišty.
+
+6. Vaše práva
+Jako subjekt údajů máte právo:
+
+Na přístup ke svým osobním údajům.
+
+Na opravu nepřesných nebo neúplných údajů.
+
+Na výmaz údajů (právo být zapomenut).
+
+Na omezení zpracování.
+
+Vznést námitku proti zpracování.
+
+Podat stížnost u Úřadu pro ochranu osobních údajů (www.uoou.cz).
+
+Pro uplatnění těchto práv mě můžete kdykoliv kontaktovat na e-mailové adrese: jachym@sulovsky.com.
+
+7. Převod správy údajů
+V případě budoucí komercializace projektu a převodu na jiný subjekt budou uživatelé o této změně správce údajů informováni. Veškeré závazky správce a práva subjektů údajů přejdou na nového správce, přičemž bude zajištěna kontinuita ochrany osobních údajů v souladu s platnou legislativou.
+
+8. Zabezpečení
+Přijal jsem přiměřená technická a organizační opatření k zabezpečení vašich údajů v rámci možností developerského projektu.`
+};
+
+const legacyMapEmbedUrlWithDuplicateParams = 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2524.316!2d15.056!3d50.767!2m3!1f0!2f0!3f0!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x470935b61a53b5f9%3A0x99cdace46aefe6d5!2sDobrodru%C5%BEn%C3%A1%202074%2F2%2C%20463%2012%20Liberec-Vesec!5e0!3m2!1scs!2scz!4v1780217264816!5m2!1scs!2scz';
+
 function run(sql, params = []) {
   db.run(`CREATE TABLE IF NOT EXISTS messages (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -64,6 +146,14 @@ async function initDb() {
     username TEXT UNIQUE NOT NULL,
     password_hash TEXT NOT NULL,
     created_at TEXT DEFAULT CURRENT_TIMESTAMP
+  )`);
+
+  await run(`CREATE TABLE IF NOT EXISTS login_attempts (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    ip_address TEXT NOT NULL,
+    username TEXT,
+    success INTEGER DEFAULT 0,
+    attempted_at DATETIME DEFAULT CURRENT_TIMESTAMP
   )`);
 
   await run(`CREATE TABLE IF NOT EXISTS properties (
@@ -136,10 +226,35 @@ async function initDb() {
     lng REAL NOT NULL
   )`);
 
-  await seedAdmin();
+  await run(`CREATE TABLE IF NOT EXISTS site_settings (
+    key TEXT PRIMARY KEY,
+    value TEXT NOT NULL DEFAULT ''
+  )`);
+
+  // await seedAdmin(); // Odstraněno pro bezpečnost - vynutíme setup
   await seedDemoData();
+  await seedSiteSettings();
+  await refreshSiteSettingDefaults();
   await refreshOfficeContactDefaults();
   await refreshDemoAgentPhotoCrops();
+}
+
+async function seedSiteSettings() {
+  for (const [key, value] of Object.entries(defaultSiteSettings)) {
+    await run('INSERT OR IGNORE INTO site_settings (key, value) VALUES (?, ?)', [key, value]);
+  }
+}
+
+async function refreshSiteSettingDefaults() {
+  await run(
+    'UPDATE site_settings SET value = ? WHERE key = ? AND value = ?',
+    [defaultSiteSettings.contact_map_embed_url, 'contact_map_embed_url', legacyMapEmbedUrlWithDuplicateParams]
+  );
+
+  await run(
+    'UPDATE site_settings SET value = ? WHERE key = ? AND value = ?',
+    [defaultSiteSettings.privacy_content, 'privacy_content', '']
+  );
 }
 
 async function seedAdmin() {

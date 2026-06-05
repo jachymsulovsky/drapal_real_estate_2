@@ -13,6 +13,20 @@ function uploadedFileUrl(files, fieldName) {
   return file ? `/uploads/${file.filename}` : '';
 }
 
+async function getSiteSettings() {
+  const rows = await all('SELECT key, value FROM site_settings');
+  return Object.fromEntries(rows.map((row) => [row.key, row.value]));
+}
+
+async function saveSiteSetting(key, value) {
+  await run(
+    `INSERT INTO site_settings (key, value)
+     VALUES (?, ?)
+     ON CONFLICT(key) DO UPDATE SET value = excluded.value`,
+    [key, clean(value)]
+  );
+}
+
 function propertyPayload(body) {
   return {
     title: clean(body.title),
@@ -55,17 +69,45 @@ function validateProperty(body) {
 }
 
 async function loginPage(req, res) {
-  res.render('admin/login', { title: 'Přihlášení do administrace', error: null });
+  const userCount = await get('SELECT COUNT(*) AS count FROM users');
+  res.render('admin/login', {
+    title: userCount.count ? 'Přihlášení do administrace' : 'Nastavení administrace',
+    error: null,
+    setupMode: userCount.count === 0
+  });
 }
 
 async function login(req, res) {
+  const userCount = await get('SELECT COUNT(*) AS count FROM users');
+
+  if (userCount.count === 0) {
+    const username = clean(req.body.username);
+    const usernameConfirm = clean(req.body.username_confirm);
+    const password = req.body.password || '';
+    const passwordConfirm = req.body.password_confirm || '';
+
+    if (!username || username !== usernameConfirm || !password || password !== passwordConfirm || password.length < 8) {
+      return res.status(422).render('admin/login', {
+        title: 'Nastavení administrace',
+        error: 'Zadejte dvakrát stejné uživatelské jméno a heslo s alespoň 8 znaky.',
+        setupMode: true
+      });
+    }
+
+    const passwordHash = await bcrypt.hash(password, 12);
+    const result = await run('INSERT INTO users (username, password_hash) VALUES (?, ?)', [username, passwordHash]);
+    req.session.user = { id: result.lastID, username };
+    return res.redirect('/admin');
+  }
+
   const user = await get('SELECT * FROM users WHERE username = ?', [req.body.username]);
   const valid = user ? await bcrypt.compare(req.body.password || '', user.password_hash) : false;
 
   if (!valid) {
     return res.status(401).render('admin/login', {
       title: 'Přihlášení do administrace',
-      error: 'Neplatné uživatelské jméno nebo heslo.'
+      error: 'Neplatné uživatelské jméno nebo heslo.',
+      setupMode: false
     });
   }
 
@@ -250,9 +292,10 @@ async function updateContacts(req, res) {
 
   await run(
     `UPDATE contact_settings SET
-     address = ?, phone = ?, email = ?, opening_hours = ?, facebook = ?, instagram = ?, linkedin = ?, lat = ?, lng = ?
+     office_name = ?, address = ?, phone = ?, email = ?, opening_hours = ?, facebook = ?, instagram = ?, linkedin = ?, lat = ?, lng = ?
      WHERE id = 1`,
     [
+      clean(req.body.office_name),
       clean(req.body.address),
       clean(req.body.phone),
       clean(req.body.email),
@@ -328,6 +371,93 @@ async function deleteAgent(req, res) {
   return res.redirect('/admin/contacts');
 }
 
+async function webSettings(req, res) {
+  const settings = await getSiteSettings();
+  const contact = await get('SELECT * FROM contact_settings WHERE id = 1');
+  res.render('admin/web-settings', { title: 'Nastavení webu', settings, contact });
+}
+
+async function updateWebSettings(req, res) {
+  const heroImage = uploadedFileUrl(req.files, 'hero_image_file');
+  const privacyDocument = uploadedFileUrl(req.files, 'privacy_document_file');
+
+  const fields = [
+    'site_name',
+    'site_meta_description',
+    'brand_mark',
+    'home_hero_eyebrow',
+    'home_hero_title',
+    'home_hero_text',
+    'home_hero_button',
+    'home_offer_eyebrow',
+    'home_offer_title',
+    'footer_description',
+    'contact_eyebrow',
+    'contact_people_title',
+    'contact_form_title',
+    'contact_map_title',
+    'contact_map_embed_url',
+    'hero_image_url',
+    'privacy_updated_at',
+    'privacy_download_url',
+    'privacy_content'
+  ];
+
+  for (const field of fields) {
+    await saveSiteSetting(field, req.body[field]);
+  }
+
+  if (heroImage) {
+    await saveSiteSetting('hero_image_url', heroImage);
+  }
+
+  if (privacyDocument) {
+    await saveSiteSetting('privacy_download_url', privacyDocument);
+  }
+
+  req.session.flash = { type: 'success', message: 'Nastavení webu bylo uloženo.' };
+  res.redirect('/admin/web');
+}
+
+async function account(req, res) {
+  res.render('admin/account', { title: 'Přístup do administrace', errors: [] });
+}
+
+async function updateAccount(req, res) {
+  const user = await get('SELECT * FROM users WHERE id = ?', [req.session.user.id]);
+  const currentValid = user ? await bcrypt.compare(req.body.current_password || '', user.password_hash) : false;
+  const newUsername = clean(req.body.new_username);
+  const newUsernameConfirm = clean(req.body.new_username_confirm);
+  const newPassword = req.body.new_password || '';
+  const newPasswordConfirm = req.body.new_password_confirm || '';
+  const errors = [];
+
+  if (!user || clean(req.body.current_username) !== user.username || !currentValid) {
+    errors.push('Současné uživatelské jméno nebo heslo nesedí.');
+  }
+
+  if (!newUsername || newUsername !== newUsernameConfirm) {
+    errors.push('Nové uživatelské jméno zadejte dvakrát stejně.');
+  }
+
+  if (!newPassword || newPassword !== newPasswordConfirm || newPassword.length < 8) {
+    errors.push('Nové heslo zadejte dvakrát stejně a použijte alespoň 8 znaků.');
+  }
+
+  if (errors.length) {
+    return res.status(422).render('admin/account', {
+      title: 'Přístup do administrace',
+      errors
+    });
+  }
+
+  const passwordHash = await bcrypt.hash(newPassword, 12);
+  await run('UPDATE users SET username = ?, password_hash = ? WHERE id = ?', [newUsername, passwordHash, user.id]);
+  req.session.user = { id: user.id, username: newUsername };
+  req.session.flash = { type: 'success', message: 'Přístupové údaje byly změněny.' };
+  return res.redirect('/admin/account');
+}
+
 module.exports = {
   loginPage,
   login,
@@ -344,5 +474,9 @@ module.exports = {
   deleteInquiry,
   contacts,
   updateContacts,
-  deleteAgent
+  deleteAgent,
+  webSettings,
+  updateWebSettings,
+  account,
+  updateAccount
 };

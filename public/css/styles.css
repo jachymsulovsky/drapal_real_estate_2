@@ -122,7 +122,7 @@ textarea {
   padding: clamp(120px, 20vh, 220px) clamp(18px, 4vw, 64px) clamp(40px, 8vh, 80px);
   background:
     linear-gradient(90deg, rgba(7, 18, 17, 0.78), rgba(7, 18, 17, 0.2)),
-    url('https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1800&q=85') center/cover;
+    var(--hero-image, url('https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1800&q=85')) center/cover;
   color: white;
 }
 
@@ -559,6 +559,21 @@ th {
   border-radius: 8px;
 }
 
+.asset-preview {
+  width: min(520px, 100%);
+  margin: 12px 0;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
+.large-textarea {
+  min-height: 520px;
+  font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
+  line-height: 1.5;
+}
+
 .login-page {
   min-height: 100vh;
   display: grid;
@@ -575,11 +590,99 @@ th {
   min-height: 50vh;
 }
 
+.legal-page {
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--primary) 8%, transparent), transparent 320px),
+    var(--bg);
+}
+
+.legal-hero {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 22px;
+  padding-bottom: 30px;
+}
+
+.legal-hero h1 {
+  max-width: 820px;
+  margin: 0 0 12px;
+  font-size: clamp(38px, 6vw, 72px);
+  line-height: 1;
+}
+
+.legal-hero p {
+  margin: 0;
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.legal-content {
+  display: grid;
+  gap: 18px;
+  max-width: 940px;
+  padding-top: 0;
+}
+
+.legal-content article,
+.legal-download {
+  padding: clamp(20px, 4vw, 30px);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+
+.legal-content h2 {
+  margin-bottom: 12px;
+  font-size: clamp(22px, 3vw, 30px);
+}
+
+.legal-content p {
+  margin: 0 0 12px;
+}
+
+.legal-content p:last-child {
+  margin-bottom: 0;
+}
+
+.legal-content ul {
+  display: grid;
+  gap: 10px;
+  margin: 0 0 14px;
+  padding-left: 22px;
+}
+
+.legal-content a {
+  color: var(--primary);
+  font-weight: 800;
+}
+
+.legal-download {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.legal-download.centered {
+  justify-content: center;
+  flex-direction: column;
+  text-align: center;
+}
+
+.legal-download p {
+  color: var(--muted);
+  font-weight: 700;
+}
+
 @media (max-width: 900px) {
   .site-header,
   .section-heading,
   .detail-hero,
-  .admin-header {
+  .admin-header,
+  .legal-hero,
+  .legal-download {
     align-items: flex-start;
     flex-direction: column;
   }

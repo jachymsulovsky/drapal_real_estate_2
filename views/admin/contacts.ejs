@@ -9,6 +9,7 @@
 
 <form class="admin-form" method="post" action="/admin/contacts" enctype="multipart/form-data">
   <div class="form-grid">
+    <label>Název kanceláře<input name="office_name" value="<%= contact.office_name %>" required></label>
     <label>Adresa kanceláře<input name="address" value="<%= contact.address %>" required></label>
     <label>Telefon<input name="phone" value="<%= contact.phone %>" required></label>
     <label>E-mail<input type="email" name="email" value="<%= contact.email %>" required></label>

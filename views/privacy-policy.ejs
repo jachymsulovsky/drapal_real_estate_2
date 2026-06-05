@@ -1,0 +1,22 @@
+<%- include('partials/head') %>
+<%- include('partials/header') %>
+
+<main class="legal-page">
+  <section class="section legal-hero">
+    <div>
+      <p class="eyebrow">Soukromí</p>
+      <h1>Zásady ochrany osobních údajů</h1>
+      <p>Naposledy aktualizováno: <%= settings.privacy_updated_at || '5. června 2026' %></p>
+    </div>
+    <a class="button" href="<%= settings.privacy_download_url || '/docs/zasady-ochrany-osobnich-udaju.docx' %>" download>Stáhnout DOCX</a>
+  </section>
+
+  <section class="section legal-content">
+    <div class="legal-download centered">
+      <p>Dokument je dostupný ve formátu DOCX.</p>
+      <a class="button" href="<%= settings.privacy_download_url || '/docs/zasady-ochrany-osobnich-udaju.docx' %>" download>Stáhnout zásady</a>
+    </div>
+  </section>
+</main>
+
+<%- include('partials/footer') %>

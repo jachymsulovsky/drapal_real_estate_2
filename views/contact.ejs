@@ -4,7 +4,7 @@
 <main class="contact-page">
   <section class="section contact-intro">
     <div>
-      <p class="eyebrow">Kontakt</p>
+      <p class="eyebrow"><%= settings.contact_eyebrow || 'Kontakt' %></p>
       <h1><%= contact.office_name %></h1>
       <p><%= contact.address %></p>
       <div class="button-row">
@@ -21,7 +21,7 @@
 
   <section class="section two-column">
     <div>
-      <h2>Kontaktní osoby</h2>
+      <h2><%= settings.contact_people_title || 'Kontaktní osoby' %></h2>
       <div class="agent-grid">
         <% agents.forEach((agent) => { %>
           <article class="agent-card">
@@ -35,7 +35,7 @@
       </div>
     </div>
     <div>
-      <h2>Napište nám</h2>
+      <h2><%= settings.contact_form_title || 'Napište nám' %></h2>
      <% if (flash && flash.type === 'success') { %>
   <div class="flash success"><%= flash.message %></div>
 <% } %>
@@ -55,13 +55,13 @@
   </section>
 
   <section class="section">
-    <h2>Kde nás najdete</h2>
+    <h2><%= settings.contact_map_title || 'Kde nás najdete' %></h2>
     <div id="google-map-container" class="map large-map" style="min-height: 450px;"></div>
     <script>
     // Example of dynamic initialization
     document.addEventListener('DOMContentLoaded', () => {
         if (window.initGoogleMaps) {
-         window.initGoogleMaps('google-map-container', 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2524.316!2d15.056!3d50.767!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x470935b61a53b5f9%3A0x99cdace46aefe6d5!2sDobrodru%C5%BEn%C3%A1%202074%2F2%2C%20463%2012%20Liberec-Vesec!5e0!3m2!1scs!2scz!4v1780217264816!5m2!1scs!2scz');
+         window.initGoogleMaps('google-map-container', <%- JSON.stringify(settings.contact_map_embed_url || '') %>);
         }
     });
     </script>

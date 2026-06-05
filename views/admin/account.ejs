@@ -1,0 +1,33 @@
+<%- include('../partials/admin-head') %>
+<%- include('../partials/admin-nav') %>
+<section class="admin-header">
+  <div>
+    <p class="eyebrow">Zabezpečení</p>
+    <h1>Přístup do administrace</h1>
+  </div>
+</section>
+
+<% if (errors.length) { %><div class="flash error"><%= errors.join(' ') %></div><% } %>
+
+<form class="admin-form" method="post" action="/admin/account">
+  <section class="admin-card">
+    <h2>Ověření současného přístupu</h2>
+    <div class="form-grid">
+      <label>Současné uživatelské jméno<input name="current_username" required autocomplete="username"></label>
+      <label>Současné heslo<input type="password" name="current_password" required autocomplete="current-password"></label>
+    </div>
+  </section>
+
+  <section class="admin-card">
+    <h2>Nový login a heslo</h2>
+    <div class="form-grid">
+      <label>Nové uživatelské jméno<input name="new_username" required autocomplete="username"></label>
+      <label>Nové uživatelské jméno znovu<input name="new_username_confirm" required autocomplete="username"></label>
+      <label>Nové heslo<input type="password" name="new_password" required minlength="8" autocomplete="new-password"></label>
+      <label>Nové heslo znovu<input type="password" name="new_password_confirm" required minlength="8" autocomplete="new-password"></label>
+    </div>
+  </section>
+
+  <button class="button" type="submit">Změnit přístup</button>
+</form>
+<%- include('../partials/admin-foot') %>

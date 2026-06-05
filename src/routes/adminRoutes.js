@@ -26,11 +26,33 @@ const upload = multer({
   }
 });
 
+const uploadSiteAsset = multer({
+  storage,
+  limits: { fileSize: 8 * 1024 * 1024 },
+  fileFilter(req, file, callback) {
+    const allowedDocuments = [
+      'application/pdf',
+      'application/msword',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+    ];
+
+    if (file.mimetype.startsWith('image/') || allowedDocuments.includes(file.mimetype)) {
+      return callback(null, true);
+    }
+
+    return callback(new Error('Nahrávat lze pouze obrázky, PDF nebo Word dokumenty.'));
+  }
+});
+
 router.get('/login', asyncHandler(adminController.loginPage));
 router.post('/login', asyncHandler(adminController.login));
 router.post('/logout', requireAuth, adminController.logout);
 
 router.get('/', requireAuth, asyncHandler(adminController.dashboard));
+router.get('/web', requireAuth, asyncHandler(adminController.webSettings));
+router.post('/web', requireAuth, uploadSiteAsset.any(), asyncHandler(adminController.updateWebSettings));
+router.get('/account', requireAuth, asyncHandler(adminController.account));
+router.post('/account', requireAuth, asyncHandler(adminController.updateAccount));
 router.get('/properties', requireAuth, asyncHandler(adminController.listProperties));
 router.get('/properties/new', requireAuth, asyncHandler(adminController.newProperty));
 router.post('/properties', requireAuth, upload.array('images', 8), asyncHandler(adminController.createProperty));

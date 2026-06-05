@@ -7,6 +7,7 @@ const router = express.Router();
 router.get('/', publicController.home);
 router.get('/nemovitost/:slug', publicController.propertyDetail);
 router.get('/kontakt', publicController.contactPage);
+router.get('/ochrana-osobnich-udaju', publicController.privacyPolicyPage);
 
 // Sjednocená cesta pro odeslání kontaktního formuláře
 router.post('/kontakt', async (req, res) => {

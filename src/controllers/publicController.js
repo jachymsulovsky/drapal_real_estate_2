@@ -25,7 +25,32 @@ function validateInquiry(body) {
 
 async function getSharedData() {
   const contact = await get('SELECT * FROM contact_settings WHERE id = 1');
-  return { contact };
+  const rows = await all('SELECT key, value FROM site_settings');
+  const settings = Object.fromEntries(rows.map((row) => [row.key, row.value]));
+  return { contact, settings };
+}
+
+function parsePrivacyContent(content) {
+  const blocks = String(content || '')
+    .split(/\n{2,}/)
+    .map((block) => block.trim())
+    .filter(Boolean);
+
+  const sections = [];
+  let current = null;
+
+  for (const block of blocks) {
+    if (/^\d+\.\s+/.test(block)) {
+      current = { heading: block, paragraphs: [] };
+      sections.push(current);
+    } else if (current) {
+      current.paragraphs.push(block);
+    } else {
+      sections.push({ heading: '', paragraphs: [block] });
+    }
+  }
+
+  return sections;
 }
 
 async function home(req, res) {
@@ -64,7 +89,7 @@ async function home(req, res) {
   const shared = await getSharedData();
 
   res.render('home', {
-    title: 'Drápal Real Estate | Moderní reality',
+    title: `${shared.settings.site_name || 'Drápal Real Estate'} | Moderní reality`,
     properties,
     types,
     locations,
@@ -90,7 +115,7 @@ async function propertyDetail(req, res) {
   const shared = await getSharedData();
 
   return res.render('property-detail', {
-    title: `${property.title} | Drápal Real Estate`,
+    title: `${property.title} | ${shared.settings.site_name || 'Drápal Real Estate'}`,
     property,
     images,
     ...shared
@@ -102,11 +127,21 @@ async function contactPage(req, res) {
   const shared = await getSharedData();
 
   res.render('contact', {
-    title: 'Kontakt | Drápal Real Estate',
+    title: `Kontakt | ${shared.settings.site_name || 'Drápal Real Estate'}`,
     agents,
     form: {},
     errors: [],
     sent: req.query.sent === '1',
+    ...shared
+  });
+}
+
+async function privacyPolicyPage(req, res) {
+  const shared = await getSharedData();
+
+  res.render('privacy-policy', {
+    title: `Zásady ochrany osobních údajů | ${shared.settings.site_name || 'Drápal Real Estate'}`,
+    privacySections: parsePrivacyContent(shared.settings.privacy_content),
     ...shared
   });
 }
@@ -149,4 +184,4 @@ async function submitInquiry(req, res) {
   return res.redirect('/kontakt?sent=1');
 }
 
-module.exports = { home, propertyDetail, contactPage, submitInquiry, getSharedData, validateInquiry };
+module.exports = { home, propertyDetail, contactPage, privacyPolicyPage, submitInquiry, getSharedData, validateInquiry };

@@ -7,20 +7,22 @@
     instagram: 'https://instagram.com/',
     linkedin: 'https://linkedin.com/'
   };
+  const siteSettings = typeof settings !== 'undefined' ? settings : {};
 %>
 <footer class="site-footer">
   <div class="footer-grid">
     <div>
       <a class="brand footer-brand" href="/">
-        <span class="brand-mark">D</span>
-        <span>Drápal Real Estate</span>
+        <span class="brand-mark"><%= siteSettings.brand_mark || 'D' %></span>
+        <span><%= siteSettings.site_name || 'Drápal Real Estate' %></span>
       </a>
-      <p>Profesionální realitní služby s důrazem na důvěru, prezentaci a výsledek.</p>
+      <p><%= siteSettings.footer_description || 'Profesionální realitní služby s důrazem na důvěru, prezentaci a výsledek.' %></p>
     </div>
     <div>
       <h2>Rychlé odkazy</h2>
       <a href="/">Nabídka</a>
       <a href="/kontakt">Kontakt</a>
+      <a href="/ochrana-osobnich-udaju">Ochrana osobních údajů</a>
       <a href="/admin">Administrace</a>
     </div>
     <div>
@@ -38,7 +40,7 @@
       </div>
     </div>
   </div>
-  <p class="copyright">© <%= new Date().getFullYear() %> Drápal Real Estate. Všechna práva vyhrazena.</p>
+  <p class="copyright">© <%= new Date().getFullYear() %> <%= siteSettings.site_name || 'Drápal Real Estate' %>. Všechna práva vyhrazena.</p>
 </footer>
 <%- include('cookie-consent') %>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>

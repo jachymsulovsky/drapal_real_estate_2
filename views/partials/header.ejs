@@ -1,7 +1,8 @@
+<% const siteSettings = typeof settings !== 'undefined' ? settings : {}; %>
 <header class="site-header">
-  <a class="brand" href="/" aria-label="Drápal Real Estate">
-    <span class="brand-mark">D</span>
-    <span>Drápal Real Estate</span>
+  <a class="brand" href="/" aria-label="<%= siteSettings.site_name || 'Drápal Real Estate' %>">
+    <span class="brand-mark"><%= siteSettings.brand_mark || 'D' %></span>
+    <span><%= siteSettings.site_name || 'Drápal Real Estate' %></span>
   </a>
   <nav class="main-nav" aria-label="Hlavní menu">
     <a class="<%= currentPath === '/' ? 'active' : '' %>" href="/">Nemovitosti</a>
