@@ -26,12 +26,14 @@
         localStorage.setItem(COOKIE_STORAGE_KEY, JSON.stringify(consentData));
         
         // Aktualizace stavu po kliknutí (Consent Mode v2 Update)
-        gtag('consent', 'update', {
-            'analytics_storage': analytics ? 'granted' : 'denied',
-            'ad_storage': marketing ? 'granted' : 'denied',
-            'ad_user_data': marketing ? 'granted' : 'denied',
-            'ad_personalization': marketing ? 'granted' : 'denied'
-        });
+        if (typeof gtag === 'function') {
+            gtag('consent', 'update', {
+                'analytics_storage': analytics ? 'granted' : 'denied',
+                'ad_storage': marketing ? 'granted' : 'denied',
+                'ad_user_data': marketing ? 'granted' : 'denied',
+                'ad_personalization': marketing ? 'granted' : 'denied'
+            });
+        }
 
         banner.classList.remove('show');
         modal.classList.remove('show');
