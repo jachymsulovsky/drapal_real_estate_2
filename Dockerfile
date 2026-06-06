@@ -2,15 +2,16 @@ FROM node:20
 
 WORKDIR /app
 
-# Kopírujeme POUZE package soubory, žádný kód ani lokální node_modules
+# Kopírujeme package soubory
 COPY package*.json ./
 
-# Nainstalujeme čisté balíčky přímo v Linuxu (sqlite3 se zkompiluje správně)
+# Čistá instalace uvnitř Dockeru
 RUN npm install
 
-# Teprve TEĎ dokopírujeme zbytek projektu (zdrojáky, views, atd.)
+# Kopírování zbytku projektu
 COPY . .
 
 EXPOSE 10000
 
-CMD ["node", "server.js"]
+# NUKLEÁRNÍ ZMĚNA: Smažeme node_modules a přeinstalujeme je TĚSNĚ předtím, než server nastartuje
+CMD rm -rf node_modules package-lock.json && npm install && node server.js
