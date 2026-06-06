@@ -2,17 +2,15 @@ FROM node:26-bookworm
 
 WORKDIR /app
 
-# 1. Nejdřív zkopírujeme úplně všechny soubory z Gitu do Dockeru
-COPY . .
+# Kopírujeme POUZE package soubory, žádný kód ani lokální node_modules
+COPY package*.json ./
 
-# 2. OKAMŽITĚ smažeme složku node_modules z tvého PC, pokud tam proklouzla
-RUN rm -rf node_modules
-
-# 3. Spustíme čistou instalaci balíčků přímo v Linuxu
+# Nainstalujeme čisté balíčky přímo v Linuxu (sqlite3 se zkompiluje správně)
 RUN npm install
 
-# 4. Otevřeme port pro Render
+# Teprve TEĎ dokopírujeme zbytek projektu (zdrojáky, views, atd.)
+COPY . .
+
 EXPOSE 10000
 
-# 5. Spustíme server
 CMD ["node", "server.js"]
