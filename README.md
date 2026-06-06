@@ -40,13 +40,14 @@ Aplikace je připravena pro nasazení na **Render.com** s plnou funkčností, pe
 
 ## Administrace
 
-```text
-URL: /admin
-Username: 4dm1n
-Password: Modr3Nebe1
-```
+Administrační rozhraní je dostupné na `/admin`.
 
-Heslo se při prvním spuštění uloží do SQLite databáze jako bcrypt hash. Plaintext heslo není ukládáno do databáze.
+**Při prvním spuštění aplikace:**
+1. Navštivte `http://localhost:3000/admin` (nebo `/admin` na produkčním serveru)
+2. Zadejte svůj username a heslo, které si chcete zvolit
+3. Systém vytvoří nový admin účet s bcrypt hashem hesla
+
+Heslo se uloží do SQLite databáze jako bcrypt hash. Plaintext heslo není nikdy ukládáno do databáze.
 
 ## Funkce
 
