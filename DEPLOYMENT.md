@@ -57,12 +57,13 @@ Render automaticky nastaví:
 - Pro produkční použití zvažte placený plán ($7/měsíc) pro 24/7 dostupnost
 
 ### Databáze
-- SQLite databáze je uložena na persistentním disku
+- SQLite databáze je uložena na persistentním disku v `data/drapal.sqlite`
+- Session store ukládá data do `data/sessions.sqlite`
 - Data zůstanou zachována i po redeployi
 - Zálohy si můžete stáhnout přes Render Shell
 
 ### Nahrané soubory
-- Fotky nahrané přes admin jsou uloženy na persistentním disku
+- Fotky nahrané přes admin jsou uloženy v `data/uploads`
 - Zůstanou zachovány mezi deploymenty
 
 ### Automatické deploymenty

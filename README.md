@@ -28,7 +28,7 @@ http://localhost:3000
 
 ### Online nasazení
 
-Aplikace je připravena pro nasazení na **Render.com** s plnou funkčností včetně databáze a admin rozhraní.
+Aplikace je připravena pro nasazení na **Render.com** s plnou funkčností, persistentním diskem pro SQLite databázi a nahrané soubory.
 
 📖 **Podrobný návod:** viz [DEPLOYMENT.md](DEPLOYMENT.md)
 
@@ -36,7 +36,7 @@ Aplikace je připravena pro nasazení na **Render.com** s plnou funkčností vč
 1. Pushněte kód na GitHub
 2. Vytvořte účet na [render.com](https://render.com)
 3. Připojte GitHub repozitář
-4. Render automaticky detekuje konfiguraci a nasadí aplikaci
+4. Render detekuje `render.yaml` a nasadí aplikaci
 
 ## Administrace
 

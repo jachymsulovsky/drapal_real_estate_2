@@ -1,8 +1,7 @@
 services:
   - type: web
-    name: drapal-real-estate-2  # Ujistěte se, že se to shoduje s názvem služby v Renderu
+    name: drapal-real-estate-2
     runtime: node
-    # ... zbytek konfigurace
     buildCommand: npm install
     startCommand: npm start
     envVars:
