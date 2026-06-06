@@ -1,18 +1,18 @@
-FROM node:20
+FROM node:20-bookworm-slim
+
+# Instalujeme základní nástroje pro kompilaci do Linuxu, aby Render neměl výmluvu
+RUN apt-get update && apt-get install -y python3 make g++ rm-all && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
-# 1. Zkopírujeme POUZE package.json (lockfile ignorujeme)
 COPY package.json ./
 
-# 2. Spustíme instalaci. Protože nemá package-lock, npm si stáhne 
-# přesně tu správnou binárku sqlite3, která perfektně sedí k Node v20 a starší GLIBC
+# Vynutíme stažení čisté linuxové binárky bez ohledu na to, co říká package-lock
+RUN npm install --platform=linux --arch=x64 sqlite3
 RUN npm install
 
-# 3. Teprve teď dokopírujeme zbytek projektu
 COPY . .
 
 EXPOSE 10000
 
-# Spustíme čistě server
 CMD ["node", "server.js"]
