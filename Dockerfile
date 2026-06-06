@@ -1,18 +1,18 @@
-FROM node:20-bookworm-slim
-
-# Instalujeme základní nástroje pro kompilaci do Linuxu, aby Render neměl výmluvu
-RUN apt-get update && apt-get install -y python3 make g++ rm-all && rm -rf /var/lib/apt/lists/*
+# Použijeme Node 22 na novém Debianu (Bookworm), který už GLIBC 2.38 stoprocentně obsahuje
+FROM node:22-bookworm
 
 WORKDIR /app
 
-COPY package.json ./
+# Zkopírujeme package soubory
+COPY package*.json ./
 
-# Vynutíme stažení čisté linuxové binárky bez ohledu na to, co říká package-lock
-RUN npm install --platform=linux --arch=x64 sqlite3
+# Nainstalujeme balíčky přímo uvnitř čistého Linuxu
 RUN npm install
 
+# Dokopírujeme zbytek projektu
 COPY . .
 
 EXPOSE 10000
 
+# Spustíme aplikaci
 CMD ["node", "server.js"]
