@@ -19,4 +19,4 @@ if (!localStorage.getItem('cookie_consent_choice')) {
 }
 
 gtag('js', new Date());
-gtag('config', 'G-0MGLFGSC9L');
+gtag('config', 'G-V8KTRE2T9Y');
