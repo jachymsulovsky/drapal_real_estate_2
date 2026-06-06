@@ -2,16 +2,17 @@ FROM node:20
 
 WORKDIR /app
 
-# Kopírujeme package soubory
-COPY package*.json ./
+# 1. Zkopírujeme POUZE package.json (lockfile ignorujeme)
+COPY package.json ./
 
-# Čistá instalace uvnitř Dockeru
+# 2. Spustíme instalaci. Protože nemá package-lock, npm si stáhne 
+# přesně tu správnou binárku sqlite3, která perfektně sedí k Node v20 a starší GLIBC
 RUN npm install
 
-# Kopírování zbytku projektu
+# 3. Teprve teď dokopírujeme zbytek projektu
 COPY . .
 
 EXPOSE 10000
 
-# NUKLEÁRNÍ ZMĚNA: Smažeme node_modules a přeinstalujeme je TĚSNĚ předtím, než server nastartuje
-CMD rm -rf node_modules package-lock.json && npm install && node server.js
+# Spustíme čistě server
+CMD ["node", "server.js"]
