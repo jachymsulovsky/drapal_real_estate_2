@@ -19,7 +19,7 @@ app.use(helmet({
     directives: {
       ...helmet.contentSecurityPolicy.getDefaultDirectives(),
       "img-src": ["'self'", "data:", "https:", "images.unsplash.com"],
-      "script-src": ["'self'", "https://cdn.jsdelivr.net", "https://unpkg.com", "https://maps.googleapis.com", "https://www.googletagmanager.com", "https://www.google-analytics.com"],
+      "script-src": ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net", "https://unpkg.com", "https://maps.googleapis.com", "https://www.googletagmanager.com", "https://www.google-analytics.com"],
       "style-src": ["'self'", "https://cdn.jsdelivr.net", "https://unpkg.com", "'unsafe-inline'"],
       "frame-src": ["'self'", "https://www.google.com"],
     },
