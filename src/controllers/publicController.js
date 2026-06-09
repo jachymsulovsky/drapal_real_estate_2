@@ -41,7 +41,14 @@ function parsePrivacyContent(content) {
 
   for (const block of blocks) {
     if (/^\d+\.\s+/.test(block)) {
-      current = { heading: block, paragraphs: [] };
+      const lines = block.split('\n');
+      const heading = lines[0].trim();
+      const remainingText = lines.slice(1).join('\n').trim();
+
+      current = { heading, paragraphs: [] };
+      if (remainingText) {
+        current.paragraphs.push(remainingText);
+      }
       sections.push(current);
     } else if (current) {
       current.paragraphs.push(block);

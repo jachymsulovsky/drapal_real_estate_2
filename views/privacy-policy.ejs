@@ -12,6 +12,19 @@
   </section>
 
   <section class="section legal-content">
+    <% if (locals.privacySections && privacySections.length > 0) { %>
+      <% privacySections.forEach(section => { %>
+        <article>
+          <% if (section.heading) { %>
+            <h2><%= section.heading %></h2>
+          <% } %>
+          <% section.paragraphs.forEach(para => { %>
+            <p><%= para %></p>
+          <% }) %>
+        </article>
+      <% }) %>
+    <% } %>
+
     <div class="legal-download centered">
       <p>Dokument je dostupný ve formátu DOCX.</p>
       <a class="button" href="<%= settings.privacy_download_url || '/docs/zasady-ochrany-osobnich-udaju.docx' %>" download>Stáhnout zásady</a>

@@ -1,0 +1,43 @@
+# Pravidla pro vývoj (Project Rules)
+
+## 1. Způsob formátování textu a renderování
+- Vždy zachovávej formátování obsahu (odstavce, odřádkování, seznamy).
+- Nikdy nepoužívej plain text pro obsah, který má mít strukturu.
+- Při úpravách renderování upřednostňuj CSS `white-space: pre-line;` nebo transformaci na HTML tagy (<p>, <br>).
+- Před každou změnou UI analyzuj stávající logiku v šablonách (EJS) a controllerech.
+
+## 2. Povinný proces před dokončením odpovědi
+Předtím, než považuješ úkol za hotový:
+- Ověř, že navržené změny neporušily funkcionalitu projektu (zkontroluj závislosti a souvislosti).
+- Pokud je to možné, navrhni jednoduchý test nebo způsob validace, že změna funguje.
+
+## 3. Struktura závěrečného shrnutí (Povinný výstup)
+Každou svou odpověď (po provedení změn) zakonči tímto shrnutím:
+
+### 🛠 Změny pro developera
+- (Stručný technický popis, co jsi v kódu změnil, v lidské řeči).
+
+### ⚙️ Změny v administraci
+- (Výcuc toho, co se změní pro admina – např. „nyní se v adminu zobrazují entery v poli X“).
+
+### 🌍 Změny pro návštěvníka
+- (Výcuc toho, co uvidí běžný uživatel – např. „text na stránce je nyní přehledně členěn do odstavců“).
+
+## 4. Příklady pro správnou implementaci (Few-Shot)
+
+### Příklad 1: Oprava renderování textu
+ŠPATNĚ (nepoužívat):
+<div>{content}</div>
+
+SPRÁVNĚ (používat toto):
+<div style="white-space: pre-line;">{content}</div>
+
+### Příklad 2: Struktura shrnutí
+### 🛠 Změny pro developera
+Upravil jsem CSS v `styles.css` u třídy `.legal-content`, aby se aplikovalo `white-space: pre-line`.
+
+### ⚙️ Změny v administraci
+Žádné, admin rozhraní zůstává beze změny.
+
+### 🌍 Změny pro návštěvníka
+Text na stránce Ochrana osobních údajů se nyní zobrazuje přesně tak, jak je v adminu napsaný, včetně odřádkování.
