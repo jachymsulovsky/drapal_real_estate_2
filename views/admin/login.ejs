@@ -5,17 +5,11 @@
       <span class="brand-mark">D</span>
       <span>Drápal Real Estate</span>
     </a>
-    <h1><%= setupMode ? 'Nastavení administrace' : 'Administrace' %></h1>
+    <h1>Administrace</h1>
     <% if (error) { %><div class="flash error"><%= error %></div><% } %>
     <label>Uživatelské jméno<input name="username" required autocomplete="username"></label>
-    <% if (setupMode) { %>
-      <label>Uživatelské jméno znovu<input name="username_confirm" required autocomplete="username"></label>
-    <% } %>
-    <label>Heslo<input type="password" name="password" required autocomplete="<%= setupMode ? 'new-password' : 'current-password' %>"></label>
-    <% if (setupMode) { %>
-      <label>Heslo znovu<input type="password" name="password_confirm" required autocomplete="new-password"></label>
-    <% } %>
-    <button class="button" type="submit"><%= setupMode ? 'Vytvořit přístup' : 'Přihlásit' %></button>
+    <label>Heslo<input type="password" name="password" required autocomplete="current-password"></label>
+    <button class="button" type="submit">Přihlásit</button>
   </form>
 </main>
 <script src="/js/main.js"></script>

@@ -7,9 +7,19 @@
   </div>
 </section>
 
+<% if (mustChangePassword) { %>
+  <div class="flash warning">
+    <strong>⚠️ Vyžadována změna výchozího hesla!</strong>
+    Používáte stále výchozí přihlašovací údaje. Z bezpečnostních důvodů si prosím
+    <em>okamžitě</em> změňte uživatelské jméno i heslo. Dokud tak neučiníte,
+    nebude vám umožněn přístup do ostatních částí administrace.
+  </div>
+<% } %>
+
 <% if (errors.length) { %><div class="flash error"><%= errors.join(' ') %></div><% } %>
 
 <form class="admin-form" method="post" action="/admin/account">
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
   <section class="admin-card">
     <h2>Ověření současného přístupu</h2>
     <div class="form-grid">

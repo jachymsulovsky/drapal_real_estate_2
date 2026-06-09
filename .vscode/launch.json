@@ -1,15 +1,34 @@
 {
-    // Use IntelliSense to learn about possible attributes.
-    // Hover to view descriptions of existing attributes.
-    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    // Použijte IntelliSense k získání informací o možných atributech.
+    // Najeďte myší pro zobrazení popisů existujících atributů.
+    // Více informací naleznete na: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
         {
+            "type": "node",
+            "request": "launch",
+            "name": "Spustit Server (Node.js)",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "program": "${workspaceFolder}/server.js",
+            "env": {
+                "NODE_ENV": "development",
+                "PORT": "3000"
+            }
+        },
+        {
             "type": "chrome",
             "request": "launch",
-            "name": "Launch Chrome against localhost",
+            "name": "Otevřít Prohlížeč (Chrome/Edge)",
             "url": "http://localhost:3000",
             "webRoot": "${workspaceFolder}"
+        }
+    ],
+    "compounds": [
+        {
+            "name": "Server + Prohlížeč",
+            "configurations": ["Spustit Server (Node.js)", "Otevřít Prohlížeč (Chrome/Edge)"]
         }
     ]
 }

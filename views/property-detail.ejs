@@ -42,6 +42,7 @@
       <a href="mailto:<%= property.agent_email %>"><%= property.agent_email %></a>
       <p><%= property.address %></p>
       <form class="stack-form" method="post" action="/kontakt">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
         <input type="hidden" name="property_id" value="<%= property.id %>">
         <input type="hidden" name="redirect_to" value="/nemovitost/<%= property.slug %>">
         <input name="name" placeholder="Jméno" required>

@@ -1,9 +1,29 @@
 const path = require('path');
+const fs = require('fs');
 const express = require('express');
 const multer = require('multer');
+const rateLimit = require('express-rate-limit');
 const adminController = require('../controllers/adminController');
 const { requireAuth } = require('../middleware/auth');
+const { validateCsrf } = require('../utils/csrf');
+const { checkFileMagicBytes } = require('../utils/validators');
 const asyncHandler = require('../utils/asyncHandler');
+
+// Rate limiter na admin operace – max 100 POST/PUT/DELETE / hodinu na IP
+const adminLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 100,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: 'Příliš mnoho požadavků. Zkuste to prosím za hodinu.'
+});
+
+const rateLimited = [requireAuth, adminLimiter];
+
+// CSRF ochrana pro POST požadavky bez nahrávání souborů
+const csrfProtected = [...rateLimited, validateCsrf];
+// Pro multipart routey musí být validateCsrf AŽ PO multeru (ten parsuje req.body)
+const withUpload = (multerMiddleware) => [...rateLimited, multerMiddleware, validateCsrf];
 
 const router = express.Router();
 
@@ -44,28 +64,50 @@ const uploadSiteAsset = multer({
   }
 });
 
+// Validace magic bytes nahraných souborů
+function validateUploadedFiles(req, res, next) {
+  if (!req.files || !req.files.length) return next();
+
+  for (const file of req.files) {
+    try {
+      const buffer = fs.readFileSync(file.path);
+      const result = checkFileMagicBytes(buffer);
+      if (!result.valid) {
+        // Smazat nevalidní soubor
+        try { fs.unlinkSync(file.path); } catch (_) { /* ignore */ }
+        req.session.flash = { type: 'error', message: `Soubor "${file.originalname}" není platný obrázek nebo dokument.` };
+        return res.redirect(req.get('Referrer') || '/admin');
+      }
+    } catch (_) {
+      // Pokud soubor nelze přečíst, přeskočíme validaci
+    }
+  }
+
+  next();
+}
+
 router.get('/login', asyncHandler(adminController.loginPage));
 router.post('/login', asyncHandler(adminController.login));
-router.post('/logout', requireAuth, adminController.logout);
+router.post('/logout', ...csrfProtected, adminController.logout);
 
 router.get('/', requireAuth, asyncHandler(adminController.dashboard));
 router.get('/web', requireAuth, asyncHandler(adminController.webSettings));
-router.post('/web', requireAuth, uploadSiteAsset.any(), asyncHandler(adminController.updateWebSettings));
+router.post('/web', ...withUpload(uploadSiteAsset.any()), validateUploadedFiles, asyncHandler(adminController.updateWebSettings));
 router.get('/account', requireAuth, asyncHandler(adminController.account));
-router.post('/account', requireAuth, asyncHandler(adminController.updateAccount));
+router.post('/account', ...csrfProtected, asyncHandler(adminController.updateAccount));
 router.get('/properties', requireAuth, asyncHandler(adminController.listProperties));
 router.get('/properties/new', requireAuth, asyncHandler(adminController.newProperty));
-router.post('/properties', requireAuth, upload.array('images', 8), asyncHandler(adminController.createProperty));
+router.post('/properties', ...withUpload(upload.array('images', 8)), validateUploadedFiles, asyncHandler(adminController.createProperty));
 router.get('/properties/:id/edit', requireAuth, asyncHandler(adminController.editProperty));
-router.post('/properties/:id', requireAuth, upload.array('images', 8), asyncHandler(adminController.updateProperty));
-router.post('/properties/:id/delete', requireAuth, asyncHandler(adminController.deleteProperty));
+router.post('/properties/:id', ...withUpload(upload.array('images', 8)), validateUploadedFiles, asyncHandler(adminController.updateProperty));
+router.post('/properties/:id/delete', ...csrfProtected, asyncHandler(adminController.deleteProperty));
 
 router.get('/inquiries', requireAuth, asyncHandler(adminController.inquiries));
-router.post('/inquiries/:id/toggle', requireAuth, asyncHandler(adminController.toggleInquiry));
-router.post('/inquiries/:id/delete', requireAuth, asyncHandler(adminController.deleteInquiry));
+router.post('/inquiries/:id/toggle', ...csrfProtected, asyncHandler(adminController.toggleInquiry));
+router.post('/inquiries/:id/delete', ...csrfProtected, asyncHandler(adminController.deleteInquiry));
 
 router.get('/contacts', requireAuth, asyncHandler(adminController.contacts));
-router.post('/contacts', requireAuth, upload.any(), asyncHandler(adminController.updateContacts));
-router.post('/contacts/agents/:id/delete', requireAuth, asyncHandler(adminController.deleteAgent));
+router.post('/contacts', ...withUpload(upload.any()), validateUploadedFiles, asyncHandler(adminController.updateContacts));
+router.post('/contacts/agents/:id/delete', ...csrfProtected, asyncHandler(adminController.deleteAgent));
 
 module.exports = router;

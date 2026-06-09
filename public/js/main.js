@@ -33,4 +33,17 @@
       L.marker([lat, lng]).addTo(map).bindPopup(title).openPopup();
     });
   }
+  // Inicializace Google Maps embed z data atributu (bezpečnější než neescapovaný JS)
+  const mapContainer = document.getElementById('google-map-container');
+  if (mapContainer && mapContainer.dataset.mapUrl) {
+    const iframe = document.createElement('iframe');
+    iframe.src = mapContainer.dataset.mapUrl;
+    iframe.style.width = '100%';
+    iframe.style.height = '100%';
+    iframe.style.border = '0';
+    iframe.allowFullscreen = true;
+    iframe.loading = 'lazy';
+    iframe.referrerPolicy = 'no-referrer-when-downgrade';
+    mapContainer.appendChild(iframe);
+  }
 })();

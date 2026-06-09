@@ -8,6 +8,7 @@
 </section>
 
 <form class="admin-form" method="post" action="/admin/contacts" enctype="multipart/form-data">
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
   <div class="form-grid">
     <label>Název kanceláře<input name="office_name" value="<%= contact.office_name %>" required></label>
     <label>Adresa kanceláře<input name="address" value="<%= contact.address %>" required></label>
@@ -62,6 +63,8 @@
     method="post"
     action="/admin/contacts/agents/<%= agent.id %>/delete"
     data-confirm="Smazat profil makléře?"
-  ></form>
+  >
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+  </form>
 <% }) %>
 <%- include('../partials/admin-foot') %>

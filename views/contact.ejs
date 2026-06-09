@@ -44,6 +44,7 @@
   <div class="flash error"><%= flash.message %></div>
 <% } %>
       <form class="stack-form" method="post" action="/kontakt">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
         <input name="name" value="<%= form.name || '' %>" placeholder="Jméno" required>
         <input type="email" name="email" value="<%= form.email || '' %>" placeholder="E-mail" required>
         <input name="phone" value="<%= form.phone || '' %>" placeholder="Telefon" required>
@@ -56,15 +57,7 @@
 
   <section class="section">
     <h2><%= settings.contact_map_title || 'Kde nás najdete' %></h2>
-    <div id="google-map-container" class="map large-map" style="min-height: 450px;"></div>
-    <script>
-    // Example of dynamic initialization
-    document.addEventListener('DOMContentLoaded', () => {
-        if (window.initGoogleMaps) {
-         window.initGoogleMaps('google-map-container', <%- JSON.stringify(settings.contact_map_embed_url || '') %>);
-        }
-    });
-    </script>
+    <div id="google-map-container" class="map large-map" style="min-height: 450px;" data-map-url="<%= settings.contact_map_embed_url || '' %>"></div>
   </section>
 </main>
 

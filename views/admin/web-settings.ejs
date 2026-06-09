@@ -9,6 +9,7 @@
 </section>
 
 <form class="admin-form" method="post" action="/admin/web" enctype="multipart/form-data">
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
   <section class="admin-card">
     <h2>Značka a SEO</h2>
     <div class="form-grid">
@@ -53,6 +54,7 @@
     <label>Google Maps embed URL<textarea name="contact_map_embed_url"><%= settings.contact_map_embed_url || '' %></textarea></label>
   </section>
 
+  <link href="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.snow.css" rel="stylesheet">
   <section class="admin-card">
     <h2>Zásady ochrany osobních údajů</h2>
     <div class="form-grid">
@@ -60,9 +62,83 @@
       <label>URL dokumentu ke stažení<input name="privacy_download_url" value="<%= settings.privacy_download_url || '' %>" required></label>
       <label>Nahrát nový dokument<input type="file" name="privacy_document_file" accept=".doc,.docx,.pdf,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"></label>
     </div>
-    <label>Text zásad<textarea class="large-textarea" name="privacy_content" required><%= settings.privacy_content || '' %></textarea></label>
+    <label>Text zásad</label>
+    <input type="hidden" name="privacy_content" id="privacy-content-input" value="<%= settings.privacy_content || '' %>">
+    <div id="editor-container" style="min-height: 400px; margin-bottom: 20px; background: var(--surface); color: var(--text);"></div>
   </section>
 
   <button class="button" type="submit">Uložit nastavení webu</button>
 </form>
+
+<style>
+  /* Custom numeric font sizes inside Quill toolbar */
+  .ql-snow .ql-picker.ql-size .ql-picker-label::before,
+  .ql-snow .ql-picker.ql-size .ql-picker-item::before {
+    content: attr(data-value) !important;
+  }
+  .ql-snow .ql-picker.ql-size .ql-picker-label:not([data-value])::before,
+  .ql-snow .ql-picker.ql-size .ql-picker-item:not([data-value])::before {
+    content: '16px' !important;
+  }
+  .ql-snow .ql-picker.ql-size {
+    width: 80px !important;
+  }
+
+  /* Zabrání přetékání Quill editoru přes bílý rámeček admin-card */
+  #editor-container {
+    width: 100%;
+    max-width: 100%;
+    overflow: hidden;
+  }
+
+  #editor-container .ql-toolbar {
+    width: 100%;
+    max-width: 100%;
+    flex-wrap: wrap;
+  }
+
+  #editor-container .ql-container {
+    width: 100%;
+    max-width: 100%;
+    overflow: hidden;
+  }
+
+  #editor-container .ql-editor {
+    overflow-y: auto;
+  }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    // Configure Quill to use inline styles for font-size instead of CSS classes
+    const Size = Quill.import('attributors/style/size');
+    Size.whitelist = ['10px', '12px', '14px', '16px', '18px', '20px', '24px', '28px', '32px', '36px', '48px'];
+    Quill.register(Size, true);
+
+    const input = document.getElementById('privacy-content-input');
+    const container = document.getElementById('editor-container');
+    
+    // Set initial content inside container
+    container.innerHTML = input.value;
+
+    const quill = new Quill('#editor-container', {
+      theme: 'snow',
+      modules: {
+        toolbar: [
+          [{ 'header': [1, 2, 3, false] }],
+          [{ 'size': ['10px', '12px', '14px', '16px', '18px', '20px', '24px', '28px', '32px', '36px', '48px'] }],
+          ['bold', 'italic', 'underline', 'strike'],
+          [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+          ['clean']
+        ]
+      }
+    });
+
+    const form = document.querySelector('form.admin-form');
+    form.addEventListener('submit', () => {
+      input.value = quill.root.innerHTML;
+    });
+  });
+</script>
 <%- include('../partials/admin-foot') %>

@@ -12,17 +12,10 @@
   </section>
 
   <section class="section legal-content">
-    <% if (locals.privacySections && privacySections.length > 0) { %>
-      <% privacySections.forEach(section => { %>
-        <article>
-          <% if (section.heading) { %>
-            <h2><%= section.heading %></h2>
-          <% } %>
-          <% section.paragraphs.forEach(para => { %>
-            <p><%= para %></p>
-          <% }) %>
-        </article>
-      <% }) %>
+    <% if (locals.privacyHtml) { %>
+      <article class="rich-text-content">
+        <%- privacyHtml %>
+      </article>
     <% } %>
 
     <div class="legal-download centered">

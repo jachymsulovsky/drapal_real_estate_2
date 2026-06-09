@@ -140,11 +140,13 @@ function all(sql, params = []) {
 
 async function initDb() {
   await run('PRAGMA foreign_keys = ON');
+  await run('PRAGMA strict = ON');
 
   await run(`CREATE TABLE IF NOT EXISTS users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     username TEXT UNIQUE NOT NULL,
     password_hash TEXT NOT NULL,
+    password_changed INTEGER DEFAULT 0,
     created_at TEXT DEFAULT CURRENT_TIMESTAMP
   )`);
 
@@ -231,12 +233,33 @@ async function initDb() {
     value TEXT NOT NULL DEFAULT ''
   )`);
 
-  // await seedAdmin(); // Odstraněno pro bezpečnost - vynutíme setup
-  await seedDemoData();
+  await run(`CREATE TABLE IF NOT EXISTS audit_logs (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER,
+    username TEXT NOT NULL DEFAULT '',
+    action TEXT NOT NULL,
+    entity TEXT NOT NULL DEFAULT '',
+    entity_id INTEGER,
+    detail TEXT NOT NULL DEFAULT '',
+    ip_address TEXT NOT NULL DEFAULT '',
+    created_at TEXT DEFAULT CURRENT_TIMESTAMP
+  )`);
+
+  await run('CREATE INDEX IF NOT EXISTS idx_audit_logs_created_at ON audit_logs(created_at)');
+  await run('CREATE INDEX IF NOT EXISTS idx_audit_logs_user_id ON audit_logs(user_id)');
+  await run('CREATE INDEX IF NOT EXISTS idx_audit_logs_action ON audit_logs(action)');
+
+  // Migrace: přidání sloupce password_changed u existujících uživatelů
+  try {
+    await run("ALTER TABLE users ADD COLUMN password_changed INTEGER DEFAULT 1");
+  } catch (_e) {
+    // Sloupec již existuje – ignorujeme
+  }
+
+  await seedAdmin();
+  await seedContactSettings();
   await seedSiteSettings();
   await refreshSiteSettingDefaults();
-  await refreshOfficeContactDefaults();
-  await refreshDemoAgentPhotoCrops();
 }
 
 async function seedSiteSettings() {
@@ -259,13 +282,17 @@ async function refreshSiteSettingDefaults() {
 
 async function seedAdmin() {
   const existing = await get('SELECT id FROM users WHERE username = ?', ['4dm1n']);
+
   if (!existing) {
-    const passwordHash = await bcrypt.hash(process.env.ADMIN_PASSWORD || 'Modr3Nebe1', 12);
-    await run('INSERT INTO users (username, password_hash) VALUES (?, ?)', ['4dm1n', passwordHash]);
+    const defaultPasswordHash = await bcrypt.hash('Modr3Nebe3', 12);
+    await run('INSERT INTO users (username, password_hash, password_changed) VALUES (?, ?, 0)', ['4dm1n', defaultPasswordHash]);
+    console.log('🔐 Vytvořen fixní admin účet (4dm1n). Po prvním přihlášení změňte heslo.');
   }
 }
 
-async function seedDemoData() {
+// ✅ Struktura webu zůstává, mažeme pouze jeho obsah (agents, properties, inquiries).
+// Pro první spuštění seedujeme pouze nezbytné konfigurační údaje (kontaktní údaje kanceláře).
+async function seedContactSettings() {
   const contact = await get('SELECT id FROM contact_settings WHERE id = 1');
   if (!contact) {
     await run(
@@ -273,200 +300,21 @@ async function seedDemoData() {
       (id, office_name, address, phone, email, opening_hours, facebook, instagram, linkedin, lat, lng)
       VALUES (1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
-        'Drápal Real Estate',
+        'Moje realitní kancelář',
         officeContact.address,
         officeContact.phone,
         officeContact.email,
         'Po-Pá 9:00-18:00, So po domluvě',
-        'https://facebook.com/',
-        'https://instagram.com/',
-        'https://linkedin.com/',
+        '',
+        '',
+        '',
         officeContact.lat,
         officeContact.lng
       ]
     );
   }
-
-  const agentCount = await get('SELECT COUNT(*) AS count FROM agents');
-  if (agentCount.count === 0) {
-    await run(
-      `INSERT INTO agents (name, role, phone, email, photo_url, bio) VALUES
-      (?, ?, ?, ?, ?, ?),
-      (?, ?, ?, ?, ?, ?),
-      (?, ?, ?, ?, ?, ?)`,
-      [
-        'Martin Drápal',
-        'Zakladatel a realitní makléř',
-        '+420 777 123 456',
-        'martin@drapalrealestate.cz',
-        'https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=600&h=600&crop=faces&q=80',
-        'Specialista na prémiové byty a investiční domy v Brně.',
-        'Lucie Nováková',
-        'Realitní makléřka',
-        '+420 777 987 654',
-        'lucie@drapalrealestate.cz',
-        'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=600&h=600&crop=faces&q=80',
-        'Provází klienty prodejem rodinných domů a rekreačních objektů.',
-        'Petr Malý',
-        'Specialista pronájmů',
-        '+420 777 456 123',
-        'petr@drapalrealestate.cz',
-        'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=600&h=600&crop=faces&q=80',
-        'Řeší pronájmy, správu portfolia a rychlé obsazení nemovitostí.'
-      ]
-    );
-  }
-
-  const propertyCount = await get('SELECT COUNT(*) AS count FROM properties');
-  if (propertyCount.count === 0) {
-    const properties = [
-      {
-        title: 'Slunný byt 3+kk s terasou v centru Brna',
-        slug: 'slunny-byt-3kk-s-terasou-v-centru-brna',
-        price: 10990000,
-        location: 'Brno-střed',
-        type: 'Byt',
-        status: 'Na prodej',
-        accessories: 'Terasa, sklep, parkovací stání',
-        energy: 'B - velmi úsporná',
-        construction: 'Cihlová novostavba',
-        infrastructure: 'MHD, školy, kavárny, park',
-        area: '86 m2',
-        ownership: 'Osobní',
-        other: 'Klimatizace, podlahové vytápění',
-        history: 'Kolaudace 2021, jeden vlastník',
-        address: 'Veveří 12, Brno',
-        lat: 49.2006,
-        lng: 16.5972,
-        agentId: 1,
-        description: 'Elegantní městské bydlení s velkou terasou, promyšlenou dispozicí a docházkovou vzdáleností do centra.'
-      },
-      {
-        title: 'Rodinný dům se zahradou v Žebětíně',
-        slug: 'rodinny-dum-se-zahradou-v-zebetine',
-        price: 15900000,
-        location: 'Brno-Žebětín',
-        type: 'Dům',
-        status: 'Rezervováno',
-        accessories: 'Garáž, zahrada, technická místnost',
-        energy: 'C - úsporná',
-        construction: 'Zděná stavba',
-        infrastructure: 'Škola, obchod, les, sportoviště',
-        area: '168 m2 + zahrada 620 m2',
-        ownership: 'Osobní',
-        other: 'Fotovoltaická příprava, retenční nádrž',
-        history: 'Rekonstrukce interiéru 2023',
-        address: 'Křivánkovo náměstí, Brno-Žebětín',
-        lat: 49.2172,
-        lng: 16.4898,
-        agentId: 2,
-        description: 'Klidné rodinné bydlení s výbornou dostupností do města a zahradou orientovanou na jihozápad.'
-      },
-      {
-        title: 'Investiční apartmán u přehrady',
-        slug: 'investicni-apartman-u-prehrady',
-        price: 5490000,
-        location: 'Brno-Bystrc',
-        type: 'Apartmán',
-        status: 'Na prodej',
-        accessories: 'Balkon, komora, výtah',
-        energy: 'B - velmi úsporná',
-        construction: 'Monolitická stavba',
-        infrastructure: 'Přehrada, restaurace, MHD, cyklostezka',
-        area: '49 m2',
-        ownership: 'Osobní',
-        other: 'Vhodné ke krátkodobému i dlouhodobému pronájmu',
-        history: 'Nově dokončený projekt',
-        address: 'Přístavní, Brno-Bystrc',
-        lat: 49.2299,
-        lng: 16.5207,
-        agentId: 3,
-        description: 'Chytrá investice v lokalitě s celoroční poptávkou, krásným okolím a nízkými provozními náklady.'
-      }
-    ];
-
-    for (const item of properties) {
-      const result = await run(
-        `INSERT INTO properties
-        (title, slug, price, location, type, status, accessories, energy_rating, construction, infrastructure,
-         area, ownership, other, history, description, address, lat, lng, agent_id)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        [
-          item.title,
-          item.slug,
-          item.price,
-          item.location,
-          item.type,
-          item.status,
-          item.accessories,
-          item.energy,
-          item.construction,
-          item.infrastructure,
-          item.area,
-          item.ownership,
-          item.other,
-          item.history,
-          item.description,
-          item.address,
-          item.lat,
-          item.lng,
-          item.agentId
-        ]
-      );
-
-      const imageSets = [
-        [
-          'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80',
-          'https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?auto=format&fit=crop&w=1200&q=80',
-          'https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&w=1200&q=80'
-        ],
-        [
-          'https://images.unsplash.com/photo-1600607688969-a5bfcd646154?auto=format&fit=crop&w=1200&q=80',
-          'https://images.unsplash.com/photo-1600573472550-8090b5e0745e?auto=format&fit=crop&w=1200&q=80',
-          'https://images.unsplash.com/photo-1600566752355-35792bedcfea?auto=format&fit=crop&w=1200&q=80'
-        ],
-        [
-          'https://images.unsplash.com/photo-1600047509807-ba8f99d2cdde?auto=format&fit=crop&w=1200&q=80',
-          'https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=1200&q=80',
-          'https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?auto=format&fit=crop&w=1200&q=80'
-        ]
-      ];
-
-      const set = imageSets[properties.indexOf(item)];
-      for (const imageUrl of set) {
-        await run('INSERT INTO property_images (property_id, image_url, alt) VALUES (?, ?, ?)', [
-          result.lastID,
-          imageUrl,
-          item.title
-        ]);
-      }
-    }
-  }
 }
 
-async function refreshDemoAgentPhotoCrops() {
-  const updates = [
-    [
-      'Martin Drápal',
-      'https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=600&q=80',
-      'https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=600&h=600&crop=faces&q=80'
-    ],
-    [
-      'Lucie Nováková',
-      'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=600&q=80',
-      'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=600&h=600&crop=faces&q=80'
-    ],
-    [
-      'Petr Malý',
-      'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=600&q=80',
-      'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=600&h=600&crop=faces&q=80'
-    ]
-  ];
-
-  for (const [name, oldUrl, newUrl] of updates) {
-    await run('UPDATE agents SET photo_url = ? WHERE name = ? AND photo_url = ?', [newUrl, name, oldUrl]);
-  }
-}
 
 async function refreshOfficeContactDefaults() {
   await run(

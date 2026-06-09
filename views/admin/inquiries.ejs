@@ -26,9 +26,11 @@
             <td><%= item.created_at %></td>
             <td class="actions">
               <form method="post" action="/admin/inquiries/<%= item.id %>/toggle">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                 <button class="button small secondary" type="submit"><%= item.handled ? 'Vrátit' : 'Vyřídit' %></button>
               </form>
               <form method="post" action="/admin/inquiries/<%= item.id %>/delete" data-confirm="Smazat poptávku?">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                 <button class="button small danger" type="submit">Smazat</button>
               </form>
             </td>

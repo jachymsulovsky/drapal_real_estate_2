@@ -1,6 +1,7 @@
 const bcrypt = require('bcrypt');
 const { all, get, run } = require('../models/db');
 const slugify = require('../utils/slugify');
+const { validateUrl, validatePassword } = require('../utils/validators');
 
 function clean(value) {
   if (Array.isArray(value)) return clean(value[0]);
@@ -19,6 +20,12 @@ async function getSiteSettings() {
 }
 
 async function saveSiteSetting(key, value) {
+  // Validace URL polí
+  const urlKeys = ['hero_image_url', 'contact_map_embed_url', 'privacy_download_url', 'facebook', 'instagram', 'linkedin'];
+  if (urlKeys.includes(key)) {
+    value = validateUrl(value);
+  }
+
   await run(
     `INSERT INTO site_settings (key, value)
      VALUES (?, ?)
@@ -69,39 +76,42 @@ function validateProperty(body) {
 }
 
 async function loginPage(req, res) {
-  const userCount = await get('SELECT COUNT(*) AS count FROM users');
   res.render('admin/login', {
-    title: userCount.count ? 'Přihlášení do administrace' : 'Nastavení administrace',
-    error: null,
-    setupMode: userCount.count === 0
+    title: 'Přihlášení do administrace',
+    error: null
   });
 }
 
 async function login(req, res) {
-  const userCount = await get('SELECT COUNT(*) AS count FROM users');
+  const ip = req.ip;
 
-  if (userCount.count === 0) {
-    const username = clean(req.body.username);
-    const usernameConfirm = clean(req.body.username_confirm);
-    const password = req.body.password || '';
-    const passwordConfirm = req.body.password_confirm || '';
+  // Ochrana proti brute force – kontrola nedávných neúspěšných pokusů
+  const recentFailures = await get(
+    `SELECT COUNT(*) AS count FROM login_attempts
+     WHERE ip_address = ? AND success = 0
+     AND attempted_at > datetime('now', '-15 minutes')`,
+    [ip]
+  );
 
-    if (!username || username !== usernameConfirm || !password || password !== passwordConfirm || password.length < 8) {
-      return res.status(422).render('admin/login', {
-        title: 'Nastavení administrace',
-        error: 'Zadejte dvakrát stejné uživatelské jméno a heslo s alespoň 8 znaky.',
-        setupMode: true
-      });
-    }
-
-    const passwordHash = await bcrypt.hash(password, 12);
-    const result = await run('INSERT INTO users (username, password_hash) VALUES (?, ?)', [username, passwordHash]);
-    req.session.user = { id: result.lastID, username };
-    return res.redirect('/admin');
+  if (recentFailures && recentFailures.count >= 5) {
+    return res.status(429).render('admin/login', {
+      title: 'Přihlášení do administrace',
+      error: 'Příliš mnoho neúspěšných pokusů o přihlášení. Zkuste to prosím za 15 minut.',
+      setupMode: false
+    });
   }
 
   const user = await get('SELECT * FROM users WHERE username = ?', [req.body.username]);
   const valid = user ? await bcrypt.compare(req.body.password || '', user.password_hash) : false;
+
+  // Záznam pokusu o přihlášení
+  await run(
+    'INSERT INTO login_attempts (ip_address, username, success) VALUES (?, ?, ?)',
+    [ip, clean(req.body.username), valid ? 1 : 0]
+  );
+
+  // Vyčištění starých záznamů (starších než 24 hodin)
+  await run(`DELETE FROM login_attempts WHERE attempted_at < datetime('now', '-24 hours')`);
 
   if (!valid) {
     return res.status(401).render('admin/login', {
@@ -111,8 +121,27 @@ async function login(req, res) {
     });
   }
 
-  req.session.user = { id: user.id, username: user.username };
-  return res.redirect('/admin');
+  // Regenerace session po úspěšném přihlášení (ochrana proti session fixation)
+  req.session.regenerate((err) => {
+    if (err) {
+      console.error('Chyba při regeneraci session:', err);
+      return res.redirect('/admin/login');
+    }
+    req.session.user = { id: user.id, username: user.username };
+
+    // Pokud uživatel ještě nezměnil výchozí heslo, vynutíme přesměrování na změnu
+    if (!user.password_changed) {
+      req.session.mustChangePassword = true;
+    }
+
+    req.session.save((saveErr) => {
+      if (saveErr) {
+        console.error('Chyba při ukládání session:', saveErr);
+        return res.redirect('/admin/login');
+      }
+      return res.redirect('/admin');
+    });
+  });
 }
 
 function logout(req, res) {
@@ -420,7 +449,11 @@ async function updateWebSettings(req, res) {
 }
 
 async function account(req, res) {
-  res.render('admin/account', { title: 'Přístup do administrace', errors: [] });
+  res.render('admin/account', {
+    title: 'Přístup do administrace',
+    errors: [],
+    mustChangePassword: req.session.mustChangePassword || false
+  });
 }
 
 async function updateAccount(req, res) {
@@ -440,8 +473,11 @@ async function updateAccount(req, res) {
     errors.push('Nové uživatelské jméno zadejte dvakrát stejně.');
   }
 
-  if (!newPassword || newPassword !== newPasswordConfirm || newPassword.length < 8) {
-    errors.push('Nové heslo zadejte dvakrát stejně a použijte alespoň 8 znaků.');
+  if (!newPassword || newPassword !== newPasswordConfirm) {
+    errors.push('Nové heslo zadejte dvakrát stejně.');
+  } else {
+    const passwordErrors = validatePassword(newPassword);
+    errors.push(...passwordErrors);
   }
 
   if (errors.length) {
@@ -452,10 +488,13 @@ async function updateAccount(req, res) {
   }
 
   const passwordHash = await bcrypt.hash(newPassword, 12);
-  await run('UPDATE users SET username = ?, password_hash = ? WHERE id = ?', [newUsername, passwordHash, user.id]);
-  req.session.user = { id: user.id, username: newUsername };
-  req.session.flash = { type: 'success', message: 'Přístupové údaje byly změněny.' };
-  return res.redirect('/admin/account');
+  await run('UPDATE users SET username = ?, password_hash = ?, password_changed = 1 WHERE id = ?', [newUsername, passwordHash, user.id]);
+
+  // Zneplatnění session po změně hesla – uživatel se musí přihlásit znovu
+  delete req.session.mustChangePassword;
+  req.session.destroy(() => {
+    return res.redirect('/admin/login');
+  });
 }
 
 module.exports = {

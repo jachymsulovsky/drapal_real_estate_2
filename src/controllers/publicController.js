@@ -1,4 +1,7 @@
 const { all, get, run } = require('../models/db');
+const sanitizeHtml = require('sanitize-html');
+const { validateUrl } = require('../utils/validators');
+
 
 function validateInquiry(body) {
   const errors = [];
@@ -146,14 +149,55 @@ async function contactPage(req, res) {
 async function privacyPolicyPage(req, res) {
   const shared = await getSharedData();
 
+  const privacyHtml = sanitizeHtml(shared.settings.privacy_content || '', {
+    allowedTags: [
+      'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'a', 'ul', 'ol',
+      'li', 'b', 'i', 'strong', 'em', 'u', 's', 'br', 'div', 'span',
+      'table', 'thead', 'tbody', 'tr', 'th', 'td', 'pre', 'code', 'hr', 'blockquote'
+    ],
+    allowedAttributes: {
+      'a': ['href', 'target', 'rel'],
+      'th': ['style'],
+      'td': ['style'],
+      '*': ['class']
+    },
+    allowedSchemes: ['http', 'https', 'mailto'],
+    // Zakaž všechny protokoly kromě http/https/mailto
+    allowProtocolRelative: false,
+    // Odstraň event handlery (onclick, onerror, atd.)
+    exclusiveFilter: (node) => {
+      if (node.attribs) {
+        for (const attr of Object.keys(node.attribs)) {
+          if (/^on/i.test(attr)) return true;
+        }
+      }
+      return false;
+    }
+  });
+
   res.render('privacy-policy', {
     title: `Zásady ochrany osobních údajů | ${shared.settings.site_name || 'Drápal Real Estate'}`,
-    privacySections: parsePrivacyContent(shared.settings.privacy_content),
+    privacyHtml,
     ...shared
   });
 }
 
 async function submitInquiry(req, res) {
+  // CSRF ochrana
+  const token = req.body._csrf;
+  if (!token || token !== req.session.csrfToken) {
+    const agents = await all('SELECT * FROM agents ORDER BY id');
+    const shared = await getSharedData();
+    return res.status(403).render('contact', {
+      title: 'Kontakt | Drápal Real Estate',
+      agents,
+      form: req.body,
+      errors: ['Neplatný bezpečnostní token. Zkuste to znovu.'],
+      sent: false,
+      ...shared
+    });
+  }
+
   const errors = validateInquiry(req.body);
   const propertyId = req.body.property_id ? Number(req.body.property_id) : null;
 
@@ -184,8 +228,12 @@ async function submitInquiry(req, res) {
   );
 
   if (propertyId && req.body.redirect_to) {
-    req.session.flash = { type: 'success', message: 'Děkujeme, zpráva byla odeslána.' };
-    return res.redirect(req.body.redirect_to);
+    const redirectTo = req.body.redirect_to;
+    // Ochrana proti open redirect – povolujeme pouze relativní URL bez protokolu
+    if (redirectTo.startsWith('/') && !redirectTo.startsWith('//') && !redirectTo.includes('://')) {
+      req.session.flash = { type: 'success', message: 'Děkujeme, zpráva byla odeslána.' };
+      return res.redirect(redirectTo);
+    }
   }
 
   return res.redirect('/kontakt?sent=1');

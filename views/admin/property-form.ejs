@@ -11,6 +11,7 @@
 <% if (errors.length) { %><div class="flash error"><%= errors.join(' ') %></div><% } %>
 
 <form class="admin-form" method="post" action="<%= action %>" enctype="multipart/form-data">
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
   <div class="form-grid">
     <label>Název<input name="title" value="<%= property.title || '' %>" required></label>
     <label>Slug URL<input name="slug" value="<%= property.slug || '' %>" placeholder="automaticky z názvu"></label>
