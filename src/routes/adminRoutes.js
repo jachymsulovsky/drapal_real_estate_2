@@ -28,7 +28,7 @@ const withUpload = (multerMiddleware) => [...rateLimited, multerMiddleware, vali
 const router = express.Router();
 
 const storage = multer.diskStorage({
-  destination: path.join(__dirname, '..', '..', 'public', 'uploads'),
+  destination: path.join(__dirname, '..', '..', 'data', 'uploads'),
   filename(req, file, callback) {
     const safeName = file.originalname.toLowerCase().replace(/[^a-z0-9.]+/g, '-');
     callback(null, `${Date.now()}-${safeName}`);
