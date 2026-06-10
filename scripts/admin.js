@@ -57,7 +57,7 @@ function printCredentials(username, password) {
   console.log(`  │  🔑  Heslo:      ${password.padEnd(34)}│`);
   console.log(`  └─────────────────────────────────────────────────┘`);
   console.log(`\n  ⚠️  Toto heslo je zobrazeno pouze nyní v terminálu.`);
-  console.log(`  ⚠️  Po přihlášení budete přesměrováni na změnu hesla.`);
+  console.log(`  ⚠️  Po přihlášení budete přesměrováni na změnu přihlašovacích údajů.`);
   console.log(`  💡  Pro zobrazení nápovědy: node scripts/admin.js help\n`);
 }
 
@@ -94,7 +94,7 @@ function showAdmin() {
   } else {
     console.log(`  ⚠️  Stav hesla:         Výchozí heslo (dosud nezměněno)`);
     console.log(`\n  💡  Heslo nelze zobrazit — je bezpečně zahashované.`);
-    console.log(`  💡  Pro vygenerování nového hesla spusťte:`);
+    console.log(`  💡  Pro vygenerování nových přihlašovacích údajů spusťte:`);
     console.log(`      node scripts/admin.js reset\n`);
   }
 
@@ -117,7 +117,7 @@ async function resetAdmin() {
   }
 
   if (!forceReset) {
-    const confirmed = await promptConfirm(`Opravdu chcete resetovat heslo pro uživatele "${user.username}"?`);
+    const confirmed = await promptConfirm(`Opravdu chcete resetovat přihlašovací údaje pro uživatele "${user.username}"?`);
     if (!confirmed) {
       console.log(`\n  ❌ Reset zrušen.\n`);
       return;
@@ -135,8 +135,8 @@ async function resetAdmin() {
 
   // Zápis do audit logu
   db.prepare(`INSERT INTO audit_logs (username, action, entity, entity_id, detail, ip_address, created_at)
-    VALUES (?, 'reset_password', 'user', ?, 'Reset hesla admin účtu z CLI', 'CLI', datetime('now'))`)
-    .run(user.username, user.id);
+    VALUES (?, 'reset_password', 'user', ?, 'Reset přihlašovacích údajů admin účtu z CLI (nový username: ' || ?, ')', 'CLI', datetime('now'))`)
+    .run(user.username, user.id, creds.username);
 
   printCredentials(creds.username, creds.password);
 }
@@ -149,12 +149,9 @@ function showHelp() {
   header(`🔐  Drápal Real Estate — Správa admin účtu`);
 
   console.log(`\n  Použití:\n`);
-  console.log(`    node scripts/admin.js show           Zobrazit admin uživatelské jméno`);
-  console.log(`    node scripts/admin.js reset          Vygenerovat nové náhodné heslo (s potvrzením)`);
-  console.log(`    node scripts/admin.js reset --force  Reset hesla bez potvrzovací otázky\n`);
+  console.log(`    node scripts/admin.js show           Zobrazit admin uživatelské jméno`);    console.log(`    node scripts/admin.js reset          Vygenerovat nové náhodné přihlašovací údaje (s potvrzením)`);    console.log(`    node scripts/admin.js reset --force  Reset přihlašovacích údajů bez potvrzovací otázky\n`);
   console.log(`  Npm skripty:\n`);
-  console.log(`    npm run admin:show                    Zobrazit admin uživatelské jméno`);
-  console.log(`    npm run admin:reset                   Vygenerovat nové náhodné heslo\n`);
+  console.log(`    npm run admin:show                    Zobrazit admin uživatelské jméno`);    console.log(`    npm run admin:reset                   Vygenerovat nové náhodné přihlašovací údaje\n`);
 }
 
 // ============================================================
