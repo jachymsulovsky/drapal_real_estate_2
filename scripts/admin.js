@@ -18,7 +18,6 @@ const crypto = require('crypto');
 const readline = require('readline');
 const bcrypt = require('bcrypt');
 
-const ADMIN_USERNAME = '4dm1n';
 const dataDir = path.join(__dirname, '..', 'data');
 const dbPath = path.join(dataDir, 'drapal.sqlite');
 const command = process.argv[2];
@@ -78,10 +77,10 @@ function promptConfirm(query) {
 
 function showAdmin() {
   const db = openDb();
-  const user = db.prepare('SELECT id, username, password_changed, created_at FROM users WHERE username = ?').get(ADMIN_USERNAME);
+  const user = db.prepare('SELECT id, username, password_changed, created_at FROM users ORDER BY id ASC LIMIT 1').get();
 
   if (!user) {
-    console.log(`\n  ❌ Admin účet "${ADMIN_USERNAME}" nebyl nalezen.`);
+    console.log(`\n  ❌ V databázi není žádný admin účet.`);
     console.log(`  💡 Spusťte server (npm start), který ho automaticky vytvoří.\n`);
     process.exit(1);
   }
@@ -109,10 +108,10 @@ function showAdmin() {
 
 async function resetAdmin() {
   const db = openDb();
-  const user = db.prepare('SELECT id, username FROM users WHERE username = ?').get(ADMIN_USERNAME);
+  const user = db.prepare('SELECT id, username FROM users ORDER BY id ASC LIMIT 1').get();
 
   if (!user) {
-    console.log(`\n  ❌ Admin účet "${ADMIN_USERNAME}" nebyl nalezen.`);
+    console.log(`\n  ❌ V databázi není žádný admin účet.`);
     console.log(`  💡 Spusťte server (npm start), který ho automaticky vytvoří.\n`);
     process.exit(1);
   }
@@ -125,17 +124,21 @@ async function resetAdmin() {
     }
   }
 
-  const password = crypto.randomBytes(6).toString('hex');
-  const passwordHash = await bcrypt.hash(password, 12);
+  const creds = {
+    username: crypto.randomBytes(4).toString('hex'),
+    password: crypto.randomBytes(6).toString('hex')
+  };
+  const passwordHash = await bcrypt.hash(creds.password, 12);
 
-  db.prepare('UPDATE users SET password_hash = ?, password_changed = 0 WHERE username = ?').run(passwordHash, ADMIN_USERNAME);
+  db.prepare('UPDATE users SET username = ?, password_hash = ?, password_changed = 0 WHERE id = ?')
+    .run(creds.username, passwordHash, user.id);
 
   // Zápis do audit logu
   db.prepare(`INSERT INTO audit_logs (username, action, entity, entity_id, detail, ip_address, created_at)
     VALUES (?, 'reset_password', 'user', ?, 'Reset hesla admin účtu z CLI', 'CLI', datetime('now'))`)
     .run(user.username, user.id);
 
-  printCredentials(user.username, password);
+  printCredentials(creds.username, creds.password);
 }
 
 // ============================================================

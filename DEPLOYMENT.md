@@ -46,8 +46,10 @@ Render automaticky nastaví:
 
 - **Veřejný web:** `https://drapal-real-estate.onrender.com`
 - **Admin:** `https://drapal-real-estate.onrender.com/admin`
-  - Username: `4dm1n`
-  - Password: `Modr3Nebe1`
+  - 🔐 **Přihlašovací údaje se vygenerují automaticky při prvním spuštění**
+  - Zkontrolujte **Logs** v Render dashboardu — uvidíte náhodné uživatelské jméno a heslo
+  - Po přihlášení si obojí změňte v sekci **Účet**
+  - Heslo nelze znovu zobrazit — v případě potřeby použijte `ADMIN_PASSWORD_RESET=true`
 
 ## Důležité poznámky
 
