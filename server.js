@@ -2,12 +2,12 @@ const crypto = require('crypto');
 const path = require('path');
 const express = require('express');
 const session = require('express-session');
-const SQLiteStore = require('connect-sqlite3')(session);
+const BetterSqlite3Store = require('better-sqlite3-session-store')(session);
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const { ensureCsrfToken } = require('./src/utils/csrf');
 
-const { initDb, all } = require('./src/models/db');
+const { initDb, all, db } = require('./src/models/db');
 const publicRoutes = require('./src/routes/publicRoutes');
 const adminRoutes = require('./src/routes/adminRoutes');
 
@@ -116,7 +116,13 @@ app.use('/uploads', express.static(path.join(__dirname, 'data', 'uploads'), stat
 
 app.use(
   session({
-    store: new SQLiteStore({ db: 'sessions.sqlite', dir: path.join(__dirname, 'data') }),
+    store: new BetterSqlite3Store({
+      client: db,
+      expired: {
+        clear: true,
+        intervalMs: 900000 // 15 minut
+      }
+    }),
     secret: process.env.SESSION_SECRET || (() => {
       if (process.env.NODE_ENV === 'production') {
         throw new Error('SESSION_SECRET must be set in production');
