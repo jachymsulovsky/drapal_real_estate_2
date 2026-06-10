@@ -346,13 +346,30 @@ function printAdminCredentials(username, password) {
 }
 
 async function seedAdmin() {
-  // Najdeme libovolného existujícího admin uživatele (prvního v DB)
+  // === Diagnostika: database file info ===
+  try {
+    const dbStat = fs.statSync(dbPath);
+    console.log(`📁 DB cesta: ${dbPath}`);
+    console.log(`📁 DB existuje: ano (${(dbStat.size / 1024).toFixed(0)} KB, modifikováno: ${dbStat.mtime.toISOString()})`);
+  } catch (_) {
+    console.log(`📁 DB cesta: ${dbPath}`);
+    console.log(`📁 DB existuje: NE – bude vytvořena`);
+  }
+
   const existing = db.prepare('SELECT id, username FROM users ORDER BY id ASC LIMIT 1').get();
   const forceReset = process.env.ADMIN_PASSWORD_RESET === 'true';
+  const envUsername = process.env.ADMIN_USERNAME || '';
+  const envPassword = process.env.ADMIN_PASSWORD || '';
+
+  console.log(`👤 Existující admin: ${existing ? existing.username : 'NENALEZEN'}`);
+  console.log(`⚙️  ADMIN_PASSWORD_RESET=${process.env.ADMIN_PASSWORD_RESET || '(nenastaveno)'}`);
+  console.log(`⚙️  ADMIN_USERNAME=${envUsername ? '***nastaveno***' : '(nenastaveno)'}`);
 
   if (existing && forceReset) {
     // Vynucený reset – ADMIN_PASSWORD_RESET=true: změníme username i heslo
-    const creds = generateRandomCredentials();
+    const creds = (envUsername && envPassword)
+      ? { username: envUsername, password: envPassword }
+      : generateRandomCredentials();
     const passwordHash = await bcrypt.hash(creds.password, 12);
     db.prepare('UPDATE users SET username = ?, password_hash = ?, password_changed = 0 WHERE id = ?')
       .run(creds.username, passwordHash, existing.id);
@@ -360,7 +377,6 @@ async function seedAdmin() {
     console.log('🔐 Resetován admin účet – ADMIN_PASSWORD_RESET=true');
     printAdminCredentials(creds.username, creds.password);
 
-    // Zápis do audit logu
     db.prepare(`INSERT INTO audit_logs (username, action, entity, entity_id, detail, ip_address, created_at)
       VALUES (?, 'reset_admin', 'user', ?, 'Reset admin účtu (ADMIN_PASSWORD_RESET) – nové náhodné username i heslo', 'startup', datetime('now'))`)
       .run(existing.username, existing.id);
@@ -372,13 +388,20 @@ async function seedAdmin() {
   }
 
   if (!existing) {
-    // První spuštění – vygenerujeme náhodný username i heslo
-    const creds = generateRandomCredentials();
+    // === Fallback: ADMIN_USERNAME/ADMIN_PASSWORD ===
+    // Pokud jsou nastaveny env proměnné, použijeme je místo náhodných.
+    // Toto řeší situaci, kdy Render persistent disk neudrží databázi
+    // mezi deployi – admin účet bude mít pokaždé stejné přihlašovací údaje.
+    const useEnv = envUsername && envPassword;
+    const creds = useEnv
+      ? { username: envUsername, password: envPassword }
+      : generateRandomCredentials();
+
     const passwordHash = await bcrypt.hash(creds.password, 12);
     db.prepare('INSERT INTO users (username, password_hash, password_changed) VALUES (?, ?, 0)')
       .run(creds.username, passwordHash);
 
-    console.log('🔐 Vytvořen nový admin účet');
+    console.log(`🔐 Vytvořen nový admin účet${useEnv ? ' (z ADMIN_USERNAME/ADMIN_PASSWORD)' : ''}`);
     printAdminCredentials(creds.username, creds.password);
   }
 }
