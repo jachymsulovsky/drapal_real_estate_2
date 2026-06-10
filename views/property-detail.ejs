@@ -1,6 +1,45 @@
 <%- include('partials/head') %>
 <%- include('partials/header') %>
 
+<%
+  //
+  // ============================================================
+  // JSON-LD STRUKTUROVANÁ DATA — RealEstateListing
+  // ============================================================
+  // Tato data pomáhají Googlu zobrazit nemovitost přímo ve
+  // výsledcích vyhledávání (včetně ceny, lokality a fotografií).
+  // ============================================================
+  //
+  const propertyImage = images.length > 0 ? images[0].image_url : '';
+%>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "RealEstateListing",
+  "name": <%- JSON.stringify(property.title) %>,
+  "description": <%- JSON.stringify(property.description.slice(0, 200)) %>,
+  "url": "https://www.drapalrealestate.cz/nemovitost/<%= property.slug %>",
+  "image": <%- JSON.stringify(propertyImage) %>,
+  "datePosted": <%- JSON.stringify(property.created_at) %>,
+  "offers": {
+    "@type": "Offer",
+    "price": <%= property.price %>,
+    "priceCurrency": "CZK",
+    "availability": "<%= property.status === 'Prodáno' ? 'SoldOut' : 'InStock' %>"
+  },
+  "address": {
+    "@type": "PostalAddress",
+    "addressLocality": <%- JSON.stringify(property.location) %>,
+    "streetAddress": <%- JSON.stringify(property.address) %>,
+    "addressCountry": "CZ"
+  },
+  "floorSize": {
+    "@type": "QuantitativeValue",
+    "value": <%- JSON.stringify(property.area) %>
+  }
+}
+</script>
+
 <main class="detail-page">
   <section class="detail-hero">
     <div>
@@ -11,11 +50,28 @@
     <strong><%= property.price.toLocaleString('cs-CZ') %> Kč</strong>
   </section>
 
-  <section class="gallery">
-    <% images.forEach((image) => { %>
-      <img src="<%= image.image_url %>" alt="<%= image.alt %>">
+  <!--
+    ============================================================
+    GALERIE — Lightbox kliknutím na obrázek
+    ============================================================
+    Každý obrázek v galerii jde otevřít v lightboxu kliknutím.
+    Lightbox zavřete kliknutím mimo obrázek nebo stiskem ESC.
+    ============================================================
+  -->
+  <section class="gallery" id="property-gallery">
+    <% images.forEach((image, index) => { %>
+      <img src="<%= image.image_url %>" alt="<%= image.alt %>" loading="lazy" onclick="openLightbox(<%= index %>)">
     <% }) %>
   </section>
+
+  <!-- Lightbox overlay – zobrazí se po kliknutí na obrázek -->
+  <div id="lightbox" class="lightbox" onclick="closeLightbox()">
+    <button class="lightbox-close" onclick="closeLightbox()" aria-label="Zavřít galerii">×</button>
+    <button class="lightbox-nav lightbox-prev" onclick="changeImage(-1)" aria-label="Předchozí">‹</button>
+    <img id="lightbox-img" src="" alt="">
+    <button class="lightbox-nav lightbox-next" onclick="changeImage(1)" aria-label="Další">›</button>
+    <div class="lightbox-counter" id="lightbox-counter"></div>
+  </div>
 
   <section class="detail-layout">
     <article>
@@ -32,8 +88,40 @@
         <div><span>Ostatní</span><strong><%= property.other %></strong></div>
         <div><span>Historie</span><strong><%= property.history %></strong></div>
       </div>
-      <div class="map" data-map data-lat="<%= property.lat %>" data-lng="<%= property.lng %>" data-title="<%= property.title %>"></div>
-    </article>
+    <div class="map" data-map data-lat="<%= property.lat %>" data-lng="<%= property.lng %>" data-title="<%= property.title %>"></div>
+
+    <!--
+      ============================================================
+      PODOBNÉ NEMOVITOSTI — Zobrazení 3 souvisejících nabídek
+      ============================================================
+      Zobrazíme nemovitosti stejného typu (bych, dům, pozemek...)
+      a ze stejné lokality, aby uživatel mohl snadno porovnávat.
+      ============================================================
+    -->
+    <% if (typeof similarProperties !== 'undefined' && similarProperties.length > 0) { %>
+      <section class="similar-properties">
+        <h2>Podobné nemovitosti</h2>
+        <div class="property-grid">
+          <% similarProperties.forEach((prop) => { %>
+            <article class="property-card">
+              <a href="/nemovitost/<%= prop.slug %>">
+                <img src="<%= prop.image_url %>" alt="<%= prop.title %>" loading="lazy">
+                <div class="property-card-body">
+                  <div class="status-row">
+                    <span class="badge"><%= prop.status %></span>
+                    <span><%= prop.type %></span>
+                  </div>
+                  <h3><%= prop.title %></h3>
+                  <p><%= prop.location %> · <%= prop.area %></p>
+                  <strong><%= prop.price.toLocaleString('cs-CZ') %> Kč</strong>
+                </div>
+              </a>
+            </article>
+          <% }) %>
+        </div>
+      </section>
+    <% } %>
+  </article>
 
     <aside class="contact-panel">
       <img src="<%= property.agent_photo %>" alt="<%= property.agent_name %>">
@@ -54,6 +142,19 @@
       </form>
     </aside>
   </section>
+  <!--
+    ============================================================
+    STICKY CTA — Mobilní kontaktní panel dole
+    ============================================================
+    Zobrazí se pouze na mobilu (šířka ≤ 640 px).
+    Obsahuje tlačítko pro zavolání makléři rovnou.
+    ============================================================
+  -->
+  <div id="sticky-cta" class="sticky-cta">
+    <a class="button" href="tel:<%= property.agent_phone.replace(/\s/g, '') %>">
+      Zavolat <%= property.agent_name %> · <%= property.agent_phone %>
+    </a>
+  </div>
 </main>
 
 <%- include('partials/footer') %>

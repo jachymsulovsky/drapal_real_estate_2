@@ -27,6 +27,10 @@ Každou svou odpověď (po provedení změn) zakonči tímto shrnutím:
 - (Výcuc toho, co uvidí běžný uživatel – např. „text na stránce je nyní přehledně členěn do odstavců“).
 
 
+
+## vem si kolik času potřebuješ 
+Neohlížej se na čas. Pokud bude nějaký prompt trvat na zpracování dlouho, řekni mi to předem, ale nesnaž se to zkracovat, nikdy nesmíš práci odfláknout. 
+
 ## 4. Příklady pro správnou implementaci (Few-Shot)
 
 ### Příklad 1: Oprava renderování textu

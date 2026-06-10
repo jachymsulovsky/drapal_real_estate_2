@@ -1,3 +1,4 @@
+const crypto = require('crypto');
 const path = require('path');
 const fs = require('fs');
 const sqlite3 = require('sqlite3').verbose();
@@ -289,9 +290,11 @@ async function seedAdmin() {
   const existing = await get('SELECT id FROM users WHERE username = ?', ['4dm1n']);
 
   if (!existing) {
-    const defaultPasswordHash = await bcrypt.hash('Modr3Nebe3', 12);
+    const password = crypto.randomBytes(6).toString('hex'); // 12 znaků hex
+    const defaultPasswordHash = await bcrypt.hash(password, 12);
     await run('INSERT INTO users (username, password_hash, password_changed) VALUES (?, ?, 0)', ['4dm1n', defaultPasswordHash]);
-    console.log('🔐 Vytvořen fixní admin účet (4dm1n). Po prvním přihlášení změňte heslo.');
+    console.log('🔐 Vytvořen nový admin účet (4dm1n).');
+    console.log(`   ⚠️  Výchozí heslo (změňte při prvním přihlášení): ${password}`);
   }
 }
 

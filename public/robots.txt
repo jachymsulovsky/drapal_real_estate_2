@@ -1,0 +1,15 @@
+# robots.txt pro Drápal Real Estate
+# ============================================================
+# Tento soubor říká vyhledávačům, které stránky mají (ne)mohou
+# indexovat. Všechny veřejné stránky jsou povoleny.
+# Administrace (/admin) je blokována, protože není určena
+# pro vyhledávače.
+# ============================================================
+
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /uploads/
+
+# Hlavní sitemap — pomáhá vyhledávačům najít všechny stránky
+Sitemap: https://www.drapalrealestate.cz/sitemap.xml

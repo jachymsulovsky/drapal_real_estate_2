@@ -1,7 +1,7 @@
 const bcrypt = require('bcrypt');
 const { all, get, run } = require('../models/db');
 const slugify = require('../utils/slugify');
-const { validateUrl, validatePassword } = require('../utils/validators');
+const { validateUrl, validatePassword, validateNumeric, validateEmail } = require('../utils/validators');
 
 function clean(value) {
   if (Array.isArray(value)) return clean(value[0]);
@@ -12,6 +12,23 @@ function clean(value) {
 function uploadedFileUrl(files, fieldName) {
   const file = (files || []).find((item) => item.fieldname === fieldName);
   return file ? `/uploads/${file.filename}` : '';
+}
+
+/** Zápis do audit logu */
+async function auditLog(req, action, entity = '', entityId = null, detail = '') {
+  await run(
+    `INSERT INTO audit_logs (user_id, username, action, entity, entity_id, detail, ip_address)
+     VALUES (?, ?, ?, ?, ?, ?, ?)`,
+    [
+      req.session.user?.id || null,
+      req.session.user?.username || '',
+      action,
+      entity,
+      entityId != null ? Number(entityId) : null,
+      String(detail).slice(0, 500),
+      req.ip || ''
+    ]
+  );
 }
 
 async function getSiteSettings() {
@@ -38,7 +55,7 @@ function propertyPayload(body) {
   return {
     title: clean(body.title),
     slug: (body.slug && slugify(body.slug)) || slugify(body.title),
-    price: Number(body.price),
+    price: validateNumeric(body.price, 0),
     location: clean(body.location),
     type: clean(body.type),
     status: body.status,
@@ -52,9 +69,9 @@ function propertyPayload(body) {
     history: clean(body.history),
     description: clean(body.description),
     address: clean(body.address),
-    lat: Number(body.lat),
-    lng: Number(body.lng),
-    agent_id: Number(body.agent_id)
+    lat: validateNumeric(body.lat, 0),
+    lng: validateNumeric(body.lng, 0),
+    agent_id: validateNumeric(body.agent_id, 1)
   };
 }
 
@@ -127,7 +144,13 @@ async function login(req, res) {
       console.error('Chyba při regeneraci session:', err);
       return res.redirect('/admin/login');
     }
+
     req.session.user = { id: user.id, username: user.username };
+
+    // Audit log – úspěšné přihlášení (chybu nepropagujeme, pouze zalogujeme)
+    auditLog(req, 'login', 'user', user.id, `Úspěšné přihlášení uživatele "${user.username}"`).catch((logErr) => {
+      console.error('Chyba při zápisu audit logu:', logErr);
+    });
 
     // Pokud uživatel ještě nezměnil výchozí heslo, vynutíme přesměrování na změnu
     if (!user.password_changed) {
@@ -211,6 +234,7 @@ async function createProperty(req, res) {
   );
 
   await saveUploadedImages(result.lastID, req.files, item.title);
+  await auditLog(req, 'create', 'property', result.lastID, `Vytvořena nemovitost "${item.title}"`);
   req.session.flash = { type: 'success', message: 'Nemovitost byla přidána.' };
   return res.redirect('/admin/properties');
 }
@@ -248,13 +272,16 @@ async function updateProperty(req, res) {
   );
 
   await saveUploadedImages(req.params.id, req.files, item.title);
+  await auditLog(req, 'update', 'property', req.params.id, `Upravena nemovitost "${item.title}"`);
   req.session.flash = { type: 'success', message: 'Nemovitost byla aktualizována.' };
   return res.redirect('/admin/properties');
 }
 
 async function deleteProperty(req, res) {
+  const property = await get('SELECT title FROM properties WHERE id = ?', [req.params.id]);
   await run('DELETE FROM property_images WHERE property_id = ?', [req.params.id]);
   await run('DELETE FROM properties WHERE id = ?', [req.params.id]);
+  await auditLog(req, 'delete', 'property', req.params.id, `Smazána nemovitost "${property?.title || 'neznámá'}"`);
   req.session.flash = { type: 'success', message: 'Nemovitost byla smazána.' };
   res.redirect('/admin/properties');
 }
@@ -293,11 +320,13 @@ async function toggleInquiry(req, res) {
   const inquiry = await get('SELECT handled FROM inquiries WHERE id = ?', [req.params.id]);
   if (inquiry) {
     await run('UPDATE inquiries SET handled = ? WHERE id = ?', [inquiry.handled ? 0 : 1, req.params.id]);
+    await auditLog(req, 'toggle', 'inquiry', req.params.id, `Stav poptávky změněn na ${inquiry.handled ? 'nevyřízeno' : 'vyřízeno'}`);
   }
   res.redirect('/admin/inquiries');
 }
 
 async function deleteInquiry(req, res) {
+  await auditLog(req, 'delete', 'inquiry', req.params.id, 'Smazána poptávka');
   await run('DELETE FROM inquiries WHERE id = ?', [req.params.id]);
   res.redirect('/admin/inquiries');
 }
@@ -327,13 +356,13 @@ async function updateContacts(req, res) {
       clean(req.body.office_name),
       clean(req.body.address),
       clean(req.body.phone),
-      clean(req.body.email),
+      validateEmail(clean(req.body.email)) || clean(req.body.email),
       clean(req.body.opening_hours),
       clean(req.body.facebook),
       clean(req.body.instagram),
       clean(req.body.linkedin),
-      Number(req.body.lat),
-      Number(req.body.lng)
+      validateNumeric(req.body.lat, 0),
+      validateNumeric(req.body.lng, 0)
     ]
   );
 
@@ -347,7 +376,7 @@ async function updateContacts(req, res) {
         clean(req.body[`agent_name_${id}`]),
         clean(req.body[`agent_role_${id}`]),
         clean(req.body[`agent_phone_${id}`]),
-        clean(req.body[`agent_email_${id}`]),
+        validateEmail(clean(req.body[`agent_email_${id}`])) || clean(req.body[`agent_email_${id}`]),
         photoUrl,
         clean(req.body[`agent_bio_${id}`]),
         id
@@ -362,19 +391,20 @@ async function updateContacts(req, res) {
         clean(req.body.new_agent_name),
         clean(req.body.new_agent_role),
         clean(req.body.new_agent_phone),
-        clean(req.body.new_agent_email),
+        validateEmail(clean(req.body.new_agent_email)) || clean(req.body.new_agent_email),
         uploadedFileUrl(req.files, 'new_agent_photo_file') || clean(req.body.new_agent_photo) || 'https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=600&q=80',
         clean(req.body.new_agent_bio)
       ]
     );
   }
 
+  await auditLog(req, 'update', 'contacts', 1, 'Aktualizovány kontakty a makléři');
   req.session.flash = { type: 'success', message: 'Kontakty byly uloženy.' };
   res.redirect('/admin/contacts');
 }
 
 async function deleteAgent(req, res) {
-  const agent = await get('SELECT id FROM agents WHERE id = ?', [req.params.id]);
+  const agent = await get('SELECT id, name FROM agents WHERE id = ?', [req.params.id]);
   if (!agent) {
     req.session.flash = { type: 'error', message: 'Makléř nebyl nalezen.' };
     return res.redirect('/admin/contacts');
@@ -396,6 +426,7 @@ async function deleteAgent(req, res) {
   }
 
   await run('DELETE FROM agents WHERE id = ?', [req.params.id]);
+  await auditLog(req, 'delete', 'agent', req.params.id, `Smazán makléř "${agent.name}"`);
   req.session.flash = { type: 'success', message: 'Makléř byl smazán.' };
   return res.redirect('/admin/contacts');
 }
@@ -444,6 +475,7 @@ async function updateWebSettings(req, res) {
     await saveSiteSetting('privacy_download_url', privacyDocument);
   }
 
+  await auditLog(req, 'update', 'web_settings', null, 'Aktualizováno nastavení webu');
   req.session.flash = { type: 'success', message: 'Nastavení webu bylo uloženo.' };
   res.redirect('/admin/web');
 }
@@ -489,6 +521,7 @@ async function updateAccount(req, res) {
 
   const passwordHash = await bcrypt.hash(newPassword, 12);
   await run('UPDATE users SET username = ?, password_hash = ?, password_changed = 1 WHERE id = ?', [newUsername, passwordHash, user.id]);
+  await auditLog(req, 'update', 'user', user.id, 'Změna uživatelského jména a/nebo hesla');
 
   // Zneplatnění session po změně hesla – uživatel se musí přihlásit znovu
   delete req.session.mustChangePassword;

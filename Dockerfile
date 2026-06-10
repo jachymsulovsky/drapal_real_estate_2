@@ -1,16 +1,33 @@
+# ============================================================
+# Dockerfile pro Drápal Real Estate
+# ============================================================
+# Base image: Node.js 22 na Debian Bookworm
+# DŮLEŽITÉ: sqlite3 musíme kompilovat ze zdroje, protože
+# prebuilt binary vyžadují GLIBC 2.38+, ale Debian Bookworm
+# má GLIBC 2.36. Kompilace ze zdroje vytvoří binary
+# kompatibilní s naším prostředím.
+# ============================================================
+
 FROM node:22-bookworm
 
-# Build tools pro kompilaci nativních modulů (sqlite3, bcrypt)
-RUN apt-get update && apt-get install -y build-essential python3 && rm -rf /var/lib/apt/lists/*
+# Nainstalujeme build tools potřebné pro kompilaci nativních modulů
+# (node-gyp potřebuje C++ kompilátor a Python)
+RUN apt-get update && apt-get install -y \
+  build-essential \
+  python3 \
+  && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /opt/render/project/src
 
-# Nejdřív package.json pro cache vrstev
+# Nejdřív zkopírujeme package.json pro optimální cacheování vrstev
 COPY package*.json ./
 
-# Donutíme kompilaci ze zdrojových kódů – prebuilt binary sqlite3 vyžaduje glibc 2.38,
-# ale naše prostředí má glibc 2.36. Kompilace ze zdroje vytvoří kompatibilní binary.
-RUN npm_config_build_from_source=true npm install --production && npm cache clean --force
+# Klíčový krok: force build from source
+# --build-from-source donutí node-gyp zkompilovat sqlite3 přímo
+# na tomto serveru, místo stažení prebuilt binary.
+# Bez tohoto by Render stáhl binary kompilovaný proti GLIBC 2.38,
+# která na Debian Bookworm (GLIBC 2.36) nefunguje.
+RUN npm install --build-from-source --production && npm cache clean --force
 
 # Zkopírujeme zbytek aplikace
 COPY . .

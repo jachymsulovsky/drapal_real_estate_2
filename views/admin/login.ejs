@@ -1,6 +1,7 @@
 <%- include('../partials/admin-head') %>
 <main class="login-page">
   <form class="login-card" method="post" action="/admin/login">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
     <a class="brand" href="/">
       <span class="brand-mark">D</span>
       <span>Drápal Real Estate</span>

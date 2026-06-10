@@ -122,12 +122,30 @@ async function propertyDetail(req, res) {
   }
 
   const images = await all('SELECT * FROM property_images WHERE property_id = ?', [property.id]);
+
+  //
+  // Načteme podobné nemovitosti (stejný typ, vyjma aktuální)
+  // Zobrazíme max 3, seřazené podle data sestupně.
+  // LEFT JOIN s obrázky pro zobrazení náhledu.
+  //
+  const similarProperties = await all(
+    `SELECT p.*, MIN(i.image_url) AS image_url
+     FROM properties p
+     LEFT JOIN property_images i ON i.property_id = p.id
+     WHERE p.type = ? AND p.id != ?
+     GROUP BY p.id
+     ORDER BY p.created_at DESC
+     LIMIT 3`,
+    [property.type, property.id]
+  );
+
   const shared = await getSharedData();
 
   return res.render('property-detail', {
     title: `${property.title} | ${shared.settings.site_name || 'Drápal Real Estate'}`,
     property,
     images,
+    similarProperties,
     ...shared
   });
 }

@@ -13,6 +13,7 @@
     <a href="/" target="_blank">Veřejný web</a>
   </nav>
   <form method="post" action="/admin/logout">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
     <button class="button ghost" type="submit">Odhlásit</button>
   </form>
 </aside>

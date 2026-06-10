@@ -19,6 +19,28 @@ function validateUrl(value) {
 }
 
 /**
+ * Ověří, že hodnota je platné číslo (ne NaN, ne null/undefined)
+ */
+function validateNumeric(value, defaultValue = 0) {
+  const num = Number(value);
+  if (value === null || value === undefined || value === '' || isNaN(num) || !isFinite(num)) {
+    return defaultValue;
+  }
+  return num;
+}
+
+/**
+ * Základní validace e-mailu
+ */
+function validateEmail(value) {
+  if (!value || typeof value !== 'string') return '';
+  const trimmed = value.trim();
+  const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailPattern.test(trimmed)) return '';
+  return trimmed;
+}
+
+/**
  * Ověří sílu hesla – min 12 znaků, alespoň 1 velké, 1 malé, 1 číslo, 1 speciální znak
  * Vrací pole chybových hlášek (prázdné = validní)
  */
@@ -85,13 +107,7 @@ function checkFileMagicBytes(buffer) {
     return { valid: true };
   }
 
-  // SVG (XML text): začíná <svg nebo <?xml
-  const firstBytes = buffer.slice(0, 20).toString('utf8').trim();
-  if (firstBytes.startsWith('<svg') || firstBytes.startsWith('<?xml') || firstBytes.startsWith('<SVG')) {
-    return { valid: true };
-  }
-
   return { valid: false, reason: 'Typ souboru není povolen.' };
 }
 
-module.exports = { validateUrl, validatePassword, checkFileMagicBytes };
+module.exports = { validateUrl, validatePassword, checkFileMagicBytes, validateNumeric, validateEmail };

@@ -1,25 +1,208 @@
 <!doctype html>
 <html lang="cs" data-theme="light">
 <head>
-  <!-- Google tag (gtag.js) -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-V8KTRE2T9Y"></script>
+  <!--
+    ============================================================
+    GOOGLE CONSENT MODE V2 — Ochrana soukromí
+    ============================================================
+    GA se načítá až po souhlasu uživatele (viz cookie-consent.js).
+    'send_page_view: false' zabraňuje odeslání pageview bez souhlasu.
+    ============================================================
+  -->
   <script>
     window.dataLayer = window.dataLayer || [];
     function gtag(){dataLayer.push(arguments);}
 
     gtag('consent', 'default', {
       'analytics_storage': 'denied',
-      'ad_storage': 'denied'
+      'ad_storage': 'denied',
+      'ad_user_data': 'denied',
+      'ad_personalization': 'denied'
     });
 
     gtag('js', new Date());
-    gtag('config', 'G-V8KTRE2T9Y');
+    gtag('config', 'G-V8KTRE2T9Y', { 'send_page_view': false });
+
+    // Funkce pro dynamické načtení GA scriptu až po souhlasu
+    function loadAnalytics() {
+      const script = document.createElement('script');
+      script.async = true;
+      script.src = 'https://www.googletagmanager.com/gtag/js?id=G-V8KTRE2T9Y';
+      document.head.appendChild(script);
+    }
+
+    // Při načtení stránky zkontrolujeme, zda už uživatel dříve souhlasil
+    document.addEventListener('DOMContentLoaded', function() {
+      try {
+        const stored = localStorage.getItem('cookie_consent_choice');
+        if (stored) {
+          const data = JSON.parse(stored);
+          if (data.analytics) {
+            gtag('consent', 'update', { 'analytics_storage': 'granted' });
+            loadAnalytics();
+          }
+        }
+      } catch (_) { /* localStorage není dostupný */ }
+    });
+
+    // Reakce na změnu souhlasu (z cookie-lišty)
+    window.addEventListener('cookieConsentUpdated', function(e) {
+      if (e.detail.analytics) {
+        gtag('consent', 'update', { 'analytics_storage': 'granted' });
+        loadAnalytics();
+      } else {
+        gtag('consent', 'update', { 'analytics_storage': 'denied' });
+      }
+    });
   </script>
+
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="<%= typeof settings !== 'undefined' && settings.site_meta_description ? settings.site_meta_description : 'Drápal Real Estate - moderní realitní kancelář pro prodej, pronájem a investice do nemovitostí.' %>">
-  <title><%= title %></title>
+
+  <!--
+    ============================================================
+    SEO – Meta description a title
+    ============================================================
+    'title' a 'metaDescription' se předávají z kontroleru.
+    'site_meta_description' lze změnit v administraci (Nastavení webu).
+    ============================================================
+  -->
+  <%
+    // Lokální proměnné pro snazší čtení šablony
+    const siteName = (typeof settings !== 'undefined' && settings.site_name) || 'Drápal Real Estate';
+    const metaDesc = (typeof settings !== 'undefined' && settings.site_meta_description)
+      ? settings.site_meta_description
+      : 'Drápal Real Estate - moderní realitní kancelář pro prodej, pronájem a investice do nemovitostí.';
+    const currentUrl = (typeof currentPath !== 'undefined') ? currentPath : '/';
+    const canonicalUrl = 'https://www.drapalrealestate.cz' + currentUrl;
+    const siteLogo = (typeof settings !== 'undefined' && settings.hero_image_url)
+      ? settings.hero_image_url
+      : 'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1200&q=80';
+    const pageTitle = (typeof title !== 'undefined') ? title : siteName;
+  %>
+  <meta name="description" content="<%= metaDesc %>">
+  <title><%= pageTitle %></title>
+
+  <!--
+    ============================================================
+    KANONICKÁ URL — Zabrání duplicitnímu obsahu
+    ============================================================
+    Google používá canonical URL k určení preferované verze stránky.
+    Pokud je stránka dostupná pod více URL (s / bez trailing slash,
+    s query parametry), canonical URL určuje tu hlavní.
+    ============================================================
+  -->
+  <link rel="canonical" href="<%= canonicalUrl %>">
+
+  <!--
+    ============================================================
+    OPEN GRAPH — Sdílení na sociálních sítích (Facebook, LinkedIn)
+    ============================================================
+    Tyto meta tagy říkají sociálním sítím, jak má vypadat náhled
+    při sdílení odkazu. 'og:image' by měla být alespoň 1200×630 px.
+    ============================================================
+  -->
+  <meta property="og:type" content="<%= (typeof property !== 'undefined' && property) ? 'website' : 'website' %>">
+  <meta property="og:title" content="<%= pageTitle %>">
+  <meta property="og:description" content="<%= metaDesc %>">
+  <meta property="og:url" content="<%= canonicalUrl %>">
+  <meta property="og:image" content="<%= siteLogo %>">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:locale" content="cs_CZ">
+  <meta property="og:site_name" content="<%= siteName %>">
+
+  <!--
+    ============================================================
+    TWITTER CARDS — Sdílení na X (Twitter)
+    ============================================================
+    'summary_large_image' zobrazí velký obrázek v timeline.
+    ============================================================
+  -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="<%= pageTitle %>">
+  <meta name="twitter:description" content="<%= metaDesc %>">
+  <meta name="twitter:image" content="<%= siteLogo %>">
+
+  <!--
+    ============================================================
+    PŘEDNAČTENÍ ZDROJŮ — Zrychlení načítání
+    ============================================================
+    'preconnect' naváže spojení se serverem ještě před stažením CSS/JS.
+    ============================================================
+  -->
   <link rel="preconnect" href="https://images.unsplash.com">
+  <link rel="preconnect" href="https://unpkg.com">
+  <link rel="preconnect" href="https://cdn.jsdelivr.net">
+
+  <!--
+    ============================================================
+    JSON-LD STRUKTUROVANÁ DATA — Organization + LocalBusiness
+    ============================================================
+    Strukturovaná data pomáhají Google pochopit obsah stránky.
+    Organization: základní informace o firmě.
+    LocalBusiness: lokální SEO pro realitní kancelář.
+    ============================================================
+  -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": ["Organization", "RealEstateAgent"],
+    "name": <%- JSON.stringify(siteName) %>,
+    "url": "https://www.drapalrealestate.cz",
+    "logo": <%- JSON.stringify(siteLogo) %>,
+    "description": <%- JSON.stringify(metaDesc) %>,
+    "address": {
+      "@type": "PostalAddress",
+      "streetAddress": "Dobrodružná 747",
+      "addressLocality": "Liberec",
+      "postalCode": "463 12",
+      "addressCountry": "CZ"
+    },
+    "contactPoint": {
+      "@type": "ContactPoint",
+      "telephone": "+420730807738",
+      "contactType": "customer service",
+      "availableLanguage": ["cs"]
+    },
+    "sameAs": [
+      <% if (typeof contact !== 'undefined' && contact.facebook) { %><%- JSON.stringify(contact.facebook) %><% if (contact.instagram || contact.linkedin) { %>,<% } } %>
+      <% if (typeof contact !== 'undefined' && contact.instagram) { %><%- JSON.stringify(contact.instagram) %><% if (contact.linkedin) { %>,<% } } %>
+      <% if (typeof contact !== 'undefined' && contact.linkedin) { %><%- JSON.stringify(contact.linkedin) %><% } %>
+    ]
+  }
+  </script>
+
+  <!--
+    ============================================================
+    BREADCRUMB — Strukturovaná data pro navigaci
+    ============================================================
+    Google zobrazí "drobenkovou navigaci" ve výsledcích vyhledávání.
+    'currentPath' se nastavuje v server.js middleware.
+    ============================================================
+  -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Úvod",
+        "item": "https://www.drapalrealestate.cz/"
+      }<% if (currentUrl !== '/') { %>,
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": <%- JSON.stringify(pageTitle.replace(siteName + ' | ', '').replace(' | ' + siteName, '')) %>,
+        "item": "https://www.drapalrealestate.cz<%= currentUrl %>"
+      }<% } %>
+    ]
+  }
+  </script>
+
+  <!-- CSS (Leaflet mapa + vlastní styly) -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
   <link rel="stylesheet" href="/css/styles.css">
 </head>
