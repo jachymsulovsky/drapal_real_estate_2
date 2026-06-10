@@ -167,6 +167,56 @@
       }
     });
 
+    // === Manuální synchronizace toolbar dropdownu ===
+    // Quill v2 má bug, kdy toolbar neaktualizuje data-value při změně kurzoru.
+    // Tento handler při každém selection-change projde DOM od kurzoru nahoru,
+    // najde explicitní font-size (inline style nebo CSS třídu) a ručně nastaví
+    // data-value na dropdown labelu.
+    quill.on('selection-change', (range) => {
+      if (!range) return;
+
+      const label = document.querySelector('.ql-picker.ql-size .ql-picker-label');
+      if (!label) return;
+
+      const sel = window.getSelection();
+      if (!sel || !sel.anchorNode) {
+        label.removeAttribute('data-value');
+        return;
+      }
+
+      // Vycházíme z elementu pod kurzorem
+      let el = sel.anchorNode.nodeType === 3 ? sel.anchorNode.parentElement : sel.anchorNode;
+      let detectedSize = '';
+
+      while (el && el !== quill.root) {
+        // 1) Inline style (starší data ze StyleAttributor)
+        const inline = el.style?.fontSize;
+        if (inline && Size.whitelist.includes(inline)) {
+          detectedSize = inline;
+          break;
+        }
+        // 2) CSS třída (novější data z ClassAttributor)
+        for (const cls of el.classList) {
+          for (const ws of Size.whitelist) {
+            if (cls === `ql-size-${ws}`) {
+              detectedSize = ws;
+              break;
+            }
+          }
+          if (detectedSize) break;
+        }
+        if (detectedSize) break;
+
+        el = el.parentElement;
+      }
+
+      if (detectedSize) {
+        label.setAttribute('data-value', detectedSize);
+      } else {
+        label.removeAttribute('data-value');
+      }
+    });
+
     const form = document.querySelector('form.admin-form');
     form.addEventListener('submit', () => {
       input.value = quill.root.innerHTML;
