@@ -71,7 +71,20 @@
 </form>
 
 <style>
-  /* Custom numeric font sizes inside Quill toolbar */
+  /* Velikostní třídy pro ClassAttributor (attributors/class/size) */
+  .ql-editor .ql-size-10px { font-size: 10px; }
+  .ql-editor .ql-size-12px { font-size: 12px; }
+  .ql-editor .ql-size-14px { font-size: 14px; }
+  .ql-editor .ql-size-16px { font-size: 16px; }
+  .ql-editor .ql-size-18px { font-size: 18px; }
+  .ql-editor .ql-size-20px { font-size: 20px; }
+  .ql-editor .ql-size-24px { font-size: 24px; }
+  .ql-editor .ql-size-28px { font-size: 28px; }
+  .ql-editor .ql-size-32px { font-size: 32px; }
+  .ql-editor .ql-size-36px { font-size: 36px; }
+  .ql-editor .ql-size-48px { font-size: 48px; }
+
+  /* Numerické zobrazení hodnot v toolbar dropdownu */
   .ql-snow .ql-picker.ql-size .ql-picker-label::before,
   .ql-snow .ql-picker.ql-size .ql-picker-item::before {
     content: attr(data-value) !important;
@@ -113,16 +126,33 @@
 <script src="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.js"></script>
 <script>
   document.addEventListener('DOMContentLoaded', () => {
-    // Configure Quill to use inline styles for font-size instead of CSS classes
-    const Size = Quill.import('attributors/style/size');
+    // === Velikost písma: ClassAttributor pro správnou synchronizaci toolbaru ===
+    // Oproti StyleAttributor (inline styles) ClassAttributor používá CSS třídy,
+    // což zajišťuje, že toolbar dropdown ihned zobrazí velikost písma textu,
+    // do kterého uživatel klikne kurzorem.
+    const Size = Quill.import('attributors/class/size');
     Size.whitelist = ['10px', '12px', '14px', '16px', '18px', '20px', '24px', '28px', '32px', '36px', '48px'];
     Quill.register(Size, true);
 
     const input = document.getElementById('privacy-content-input');
     const container = document.getElementById('editor-container');
-    
-    // Set initial content inside container
-    container.innerHTML = input.value;
+
+    // === Zpětná kompatibilita: konverze inline style="font-size: X" → CSS třída ===
+    // Starší data byla uložena s inline styly (z dřívějšího StyleAttributor).
+    // Před inicializací Quillu je převedeme na třídy, aby ClassAttributor
+    // správně rozpoznal existující formátování.
+    let initialHtml = input.value;
+    initialHtml = initialHtml.replace(
+      /<([a-z0-9]+)([^>]*?)style="font-size:\s*(\d+px)"([^>]*)>/gi,
+      (match, tag, before, size, after) => {
+        // Přidáme CSS třídu a odstraníme původní inline style s font-size
+        const cleaned = (before + after).replace(/\s*style="[^"]*"\s*/gi, '').trim();
+        return `<${tag} class="ql-size-${size}" ${cleaned}>`.replace(/\s+/g, ' ').trimEnd();
+      }
+    );
+    // Fallback: odstraní osamocené font-size inline styly (pokud regex výše něco pustil)
+    initialHtml = initialHtml.replace(/\s+style="font-size:\s*\d+px;?"\s*/gi, ' ');
+    container.innerHTML = initialHtml;
 
     const quill = new Quill('#editor-container', {
       theme: 'snow',
