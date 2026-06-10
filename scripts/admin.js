@@ -135,7 +135,7 @@ async function resetAdmin() {
 
   // Zápis do audit logu
   db.prepare(`INSERT INTO audit_logs (username, action, entity, entity_id, detail, ip_address, created_at)
-    VALUES (?, 'reset_password', 'user', ?, 'Reset přihlašovacích údajů admin účtu z CLI (nový username: ' || ?, ')', 'CLI', datetime('now'))`)
+    VALUES (?, 'reset_password', 'user', ?, 'Reset přihlašovacích údajů admin účtu z CLI (nový username: ' || ? || ')', 'CLI', datetime('now'))`)
     .run(user.username, user.id, creds.username);
 
   printCredentials(creds.username, creds.password);
