@@ -28,8 +28,7 @@ Každou svou odpověď (po provedení změn) zakonči tímto shrnutím:
 
 
 
-## vem si kolik času potřebuješ 
-Neohlížej se na čas. Pokud bude nějaký prompt trvat na zpracování dlouho, řekni mi to předem, ale nesnaž se to zkracovat, nikdy nesmíš práci odfláknout. 
+
 
 ## 4. Příklady pro správnou implementaci (Few-Shot)
 
@@ -49,3 +48,10 @@ Upravil jsem CSS v `styles.css` u třídy `.legal-content`, aby se aplikovalo `w
 
 ### 🌍 Změny pro návštěvníka
 Text na stránce Ochrana osobních údajů se nyní zobrazuje přesně tak, jak je v adminu napsaný, včetně odřádkování.
+
+
+## 5. vem si kolik času potřebuješ 
+Neohlížej se na čas. Pokud bude nějaký prompt trvat na zpracování dlouho, řekni mi to předem, ale nesnaž se to zkracovat, nikdy nesmíš práci odfláknout. 
+
+## 6 vždy kontroluj kód, zda neexistují nějaké bezpečnostní chyby / zranitelnosti
+Před ukončením odpovědi (do každého todo listu) vždy přidej úkol, jehož obsahem bude kontrola celého webu a bezpečnostní audit, který ověří, že celý web je bezpečný a není napadnutelný. 

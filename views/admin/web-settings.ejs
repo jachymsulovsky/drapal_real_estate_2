@@ -64,7 +64,7 @@
     </div>
     <label>Text zásad</label>
     <input type="hidden" name="privacy_content" id="privacy-content-input" value="<%= settings.privacy_content || '' %>">
-    <div id="editor-container" style="min-height: 400px; margin-bottom: 20px; background: var(--surface); color: var(--text);"></div>
+    <div id="editor-container" style="background: var(--surface); color: var(--text);"></div>
   </section>
 
   <button class="button" type="submit">Uložit nastavení webu</button>
@@ -84,11 +84,10 @@
     width: 80px !important;
   }
 
-  /* Zabrání přetékání Quill editoru přes bílý rámeček admin-card */
+  /* Quill editor — toolbary a dropdown menu nesmí být ořezané */
   #editor-container {
     width: 100%;
     max-width: 100%;
-    overflow: hidden;
   }
 
   #editor-container .ql-toolbar {
@@ -100,11 +99,16 @@
   #editor-container .ql-container {
     width: 100%;
     max-width: 100%;
-    overflow: hidden;
   }
 
   #editor-container .ql-editor {
+    min-height: 360px;
     overflow-y: auto;
+  }
+
+  /* Větší odsazení mezi poslední kartou a tlačítkem */
+  .admin-card:last-of-type {
+    padding-bottom: 48px;
   }
 </style>
 
