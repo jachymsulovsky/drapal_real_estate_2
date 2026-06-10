@@ -1,0 +1,1 @@
+Testovaci deploy - overeni persistence databaze a admin uctu
