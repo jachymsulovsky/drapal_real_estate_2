@@ -7,6 +7,10 @@
   </div>
 </section>
 
+<% if (flash && flash.type === 'error' && flash.message) { %>
+  <div class="flash error"><%= flash.message %></div>
+<% } %>
+
 <% if (mustChangePassword) { %>
   <div class="flash warning">
     <strong>⚠️ Vyžadována změna výchozího hesla!</strong>

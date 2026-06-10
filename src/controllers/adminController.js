@@ -515,7 +515,8 @@ async function updateAccount(req, res) {
   if (errors.length) {
     return res.status(422).render('admin/account', {
       title: 'Přístup do administrace',
-      errors
+      errors,
+      mustChangePassword: req.session.mustChangePassword || false
     });
   }
 
