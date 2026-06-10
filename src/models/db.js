@@ -328,7 +328,28 @@ Přijal jsem přiměřená technická a organizační opatření k zabezpečení
 };
 
 async function seedAdmin() {
-  const existing = db.prepare('SELECT id FROM users WHERE username = ?').get('4dm1n');
+  const existing = db.prepare('SELECT id, username FROM users WHERE username = ?').get('4dm1n');
+  const forceReset = process.env.ADMIN_PASSWORD_RESET === 'true';
+
+  if (existing && forceReset) {
+    // Vynucený reset hesla – ADMIN_PASSWORD_RESET=true v env
+    const password = crypto.randomBytes(6).toString('hex');
+    const passwordHash = await bcrypt.hash(password, 12);
+    db.prepare('UPDATE users SET password_hash = ?, password_changed = 0 WHERE username = ?').run(passwordHash, '4dm1n');
+    console.log('🔐 Resetován admin účet (4dm1n) – ADMIN_PASSWORD_RESET=true');
+    console.log(`   ⚠️  Nové výchozí heslo (změňte při prvním přihlášení): ${password}`);
+
+    // Zápis do audit logu
+    db.prepare(`INSERT INTO audit_logs (username, action, entity, entity_id, detail, ip_address, created_at)
+      VALUES (?, 'reset_password', 'user', ?, 'Reset hesla admin účtu (ADMIN_PASSWORD_RESET)', 'startup', datetime('now'))`)
+      .run(existing.username, existing.id);
+    return;
+  }
+
+  if (forceReset && !existing) {
+    console.log('📌 ADMIN_PASSWORD_RESET=true, ale admin účet zatím neexistuje – vytvářím nový...');
+  }
+
   if (!existing) {
     const password = crypto.randomBytes(6).toString('hex');
     const passwordHash = await bcrypt.hash(password, 12);
