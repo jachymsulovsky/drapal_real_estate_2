@@ -1,4 +1,4 @@
-Test deployment: Render API update env vars při změně admin credentials
+Test deployment: otestování Render API update env vars při změně admin credentials
 Datum: 11. června 2026
-Účel: Otestovat, že změna credentials v admin UI aktualizuje i Render env vars
-Stav: Test č. 11 - DELETE mód + Render API
+Účel: Změnit credentials v admin UI, pak pushnout DD a ověřit že nové údaje přežily redeploy
+Stav: Test č. 12 - RENDER_API_KEY a RENDER_SERVICE_ID nastaveny v dashboardu
