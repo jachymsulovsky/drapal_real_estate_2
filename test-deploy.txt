@@ -1,4 +1,4 @@
 Test deployment: ověření ADMIN_USERNAME/ADMIN_PASSWORD z Render dashboardu
 Datum: 11. června 2026
-Účel: Otestovat manuálně nastavené env vars v Render dashboardu
-Stav: Test č. 7 - manuální nastavení v Render dashboardu
+Účel: Otestovat persistence admin účtu po redeployi - test č. 8
+Stav: Po nastavení env vars v Render dashboardu
