@@ -7,6 +7,10 @@ services:
         value: production
       - key: SESSION_SECRET
         generateValue: true
+      - key: ADMIN_USERNAME
+        generateValue: true
+      - key: ADMIN_PASSWORD
+        generateValue: true
     disk:
       name: drapal-data
       mountPath: /opt/render/project/src/data
