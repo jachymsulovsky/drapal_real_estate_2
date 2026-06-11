@@ -1,1 +1,3 @@
-Testovaci deploy - overeni persistence databaze a admin uctu
+Test deployment: ověření persistence admin přihlašovacích údajů
+Datum: 11. června 2026
+Účel: Otestovat, že se po redeployi negenerují nové random login údaje díky ADMIN_USERNAME/ADMIN_PASSWORD env vars s generateValue: true v render.yaml
