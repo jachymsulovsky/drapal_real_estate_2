@@ -1,4 +1,4 @@
-Test deployment: ověření persistence admin účtu po nastavení env vars
+Test deployment: Render API update env vars při změně admin credentials
 Datum: 11. června 2026
-Účel: Další test po nastavení ADMIN_USERNAME/ADMIN_PASSWORD v Render dashboardu
-Stav: Test č. 9
+Účel: Otestovat, že změna credentials v admin UI aktualizuje i Render env vars
+Stav: Test č. 11 - DELETE mód + Render API

@@ -1,5 +1,6 @@
 const bcrypt = require('bcrypt');
-const { all, get, run, saveAdminBackup, forceCheckpoint } = require('../models/db');
+const { all, get, run, saveAdminBackup } = require('../models/db');
+const { updateAdminCredentials } = require('../utils/renderEnv');
 const slugify = require('../utils/slugify');
 const { validateUrl, validatePassword, validateNumeric, validateEmail } = require('../utils/validators');
 
@@ -528,8 +529,9 @@ async function updateAccount(req, res) {
   // (pro případ, že by se databáze ztratila při příštím deployi)
   saveAdminBackup(newUsername, passwordHash, true);
 
-  // Force WAL checkpoint — změna credentials musí přežít redeploy
-  forceCheckpoint();
+  // Aktualizujeme ADMIN_USERNAME a ADMIN_PASSWORD v Render dashboardu
+  // přes Render API — to je jediná cesta, jak změna přežije redeploy
+  updateAdminCredentials(newUsername, newPassword);
 
   // Zneplatnění session po změně hesla – uživatel se musí přihlásit znovu
   delete req.session.mustChangePassword;
