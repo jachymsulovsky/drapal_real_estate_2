@@ -464,11 +464,15 @@ async function seedAdmin() {
       : generateRandomCredentials();
 
     const passwordHash = await bcrypt.hash(creds.password, 12);
-    db.prepare('INSERT INTO users (username, password_hash, password_changed) VALUES (?, ?, 0)')
-      .run(creds.username, passwordHash);
+    // Pokud jsou credentials z ADMIN_USERNAME/ADMIN_PASSWORD env vars (uživatel si je nastavil sám),
+    // považujeme je za již změněné – nechceme nutit změnu při každém přihlášení.
+    // Pouze při náhodném generování (useEnv=false) vynutíme změnu (password_changed=0).
+    const passwordChanged = useEnv ? 1 : 0;
+    db.prepare('INSERT INTO users (username, password_hash, password_changed) VALUES (?, ?, ?)')
+      .run(creds.username, passwordHash, passwordChanged);
 
     // Uložíme do backupu pro příště
-    saveAdminBackup(creds.username, passwordHash, false);
+    saveAdminBackup(creds.username, passwordHash, !!passwordChanged);
 
     forceCheckpoint();
 
