@@ -1,4 +1,4 @@
 Test deployment: ověření persistence admin přihlašovacích údajů
 Datum: 11. června 2026
-Účel: Otestovat, že se po redeployi negenerují nové random login údaje díky admin backup JSON souboru
-Stav: Test č. 2 - po implementaci backup JSON souboru
+Účel: Otestovat, že se po redeployi obnoví admin účet z backup JSON souboru
+Stav: Test č. 3 - po přihlášení a změně credentials v admin UI
