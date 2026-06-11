@@ -8,9 +8,9 @@ services:
       - key: SESSION_SECRET
         generateValue: true
       - key: ADMIN_USERNAME
-        generateValue: true
+        value: admin_c46c5c17
       - key: ADMIN_PASSWORD
-        generateValue: true
+        value: 5b6ae6a70d753d8e
     disk:
       name: drapal-data
       mountPath: /opt/render/project/src/data

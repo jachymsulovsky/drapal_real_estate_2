@@ -1,4 +1,4 @@
-Test deployment: ověření WAL checkpoint persistence admin účtu
+Test deployment: ověření ADMIN_USERNAME/ADMIN_PASSWORD v render.yaml
 Datum: 11. června 2026
-Účel: Otestovat WAL checkpoint fix
-Stav: Test č. 5 - kontrola po WAL checkpoint opravě
+Účel: Otestovat fixní env var credentials místo generateValue
+Stav: Test č. 6 - fixní hodnoty v render.yaml
