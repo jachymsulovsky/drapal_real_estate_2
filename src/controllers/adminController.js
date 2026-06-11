@@ -1,5 +1,5 @@
 const bcrypt = require('bcrypt');
-const { all, get, run } = require('../models/db');
+const { all, get, run, saveAdminBackup } = require('../models/db');
 const slugify = require('../utils/slugify');
 const { validateUrl, validatePassword, validateNumeric, validateEmail } = require('../utils/validators');
 
@@ -523,6 +523,10 @@ async function updateAccount(req, res) {
   const passwordHash = await bcrypt.hash(newPassword, 12);
   await run('UPDATE users SET username = ?, password_hash = ?, password_changed = 1 WHERE id = ?', [newUsername, passwordHash, user.id]);
   await auditLog(req, 'update', 'user', user.id, 'Změna uživatelského jména a/nebo hesla');
+
+  // Uložíme změněné credentials do backup JSON souboru
+  // (pro případ, že by se databáze ztratila při příštím deployi)
+  saveAdminBackup(newUsername, passwordHash, true);
 
   // Zneplatnění session po změně hesla – uživatel se musí přihlásit znovu
   delete req.session.mustChangePassword;

@@ -19,6 +19,7 @@ const bcrypt = require('bcrypt');
 
 const dataDir = path.join(__dirname, '..', '..', 'data');
 const dbPath = path.join(dataDir, 'drapal.sqlite');
+const adminBackupPath = path.join(dataDir, 'admin-backup.json');
 
 // Vytvoříme adresář pro data, pokud neexistuje
 if (!fs.existsSync(dataDir)) {
@@ -327,6 +328,42 @@ V případě budoucí komercializace projektu a převodu na jiný subjekt budou 
 Přijal jsem přiměřená technická a organizační opatření k zabezpečení vašich údajů v rámci možností developerského projektu.`
 };
 
+// ============================================================
+// Admin backup — JSON soubor na persistentním disku nezávislý
+// na SQLite databázi. Řeší situaci, kdy se databáze ztratí
+// mezi deploymenty (např. problém s Render persistent diskem).
+// ============================================================
+
+function saveAdminBackup(username, passwordHash, passwordChanged) {
+  try {
+    const data = {
+      username,
+      password_hash: passwordHash,
+      password_changed: passwordChanged ? 1 : 0,
+      updated_at: new Date().toISOString()
+    };
+    fs.writeFileSync(adminBackupPath, JSON.stringify(data, null, 2));
+    console.log(`📁 Admin backup saved to ${adminBackupPath}`);
+  } catch (err) {
+    console.error('⚠️  Failed to save admin backup:', err.message);
+  }
+}
+
+function loadAdminBackup() {
+  try {
+    if (fs.existsSync(adminBackupPath)) {
+      const data = JSON.parse(fs.readFileSync(adminBackupPath, 'utf8'));
+      if (data && data.username && data.password_hash) {
+        console.log(`📁 Admin backup found: ${data.username} (password_changed=${data.password_changed})`);
+        return data;
+      }
+    }
+  } catch (err) {
+    console.error('⚠️  Failed to load admin backup:', err.message);
+  }
+  return null;
+}
+
 function generateRandomCredentials() {
   return {
     username: crypto.randomBytes(4).toString('hex'),   // 8 hex znaků
@@ -374,6 +411,9 @@ async function seedAdmin() {
     db.prepare('UPDATE users SET username = ?, password_hash = ?, password_changed = 0 WHERE id = ?')
       .run(creds.username, passwordHash, existing.id);
 
+    // Uložíme do backupu
+    saveAdminBackup(creds.username, passwordHash, false);
+
     console.log('🔐 Resetován admin účet – ADMIN_PASSWORD_RESET=true');
     printAdminCredentials(creds.username, creds.password);
 
@@ -388,7 +428,19 @@ async function seedAdmin() {
   }
 
   if (!existing) {
-    // === Fallback: ADMIN_USERNAME/ADMIN_PASSWORD ===
+    // === 1. Pokus o obnovení z backup JSON souboru ===
+    // Backup je na persistentním disku nezávisle na SQLite.
+    // Pokud databáze zmizí, ale backup existuje, obnovíme z něj.
+    const backup = loadAdminBackup();
+    if (backup) {
+      console.log('🔐 Obnovuji admin účet z backup souboru...');
+      db.prepare('INSERT INTO users (username, password_hash, password_changed) VALUES (?, ?, ?)')
+        .run(backup.username, backup.password_hash, backup.password_changed);
+      console.log(`✅ Admin obnoven z backupu: ${backup.username} (password_changed=${backup.password_changed})`);
+      return;
+    }
+
+    // === 2. Fallback: ADMIN_USERNAME/ADMIN_PASSWORD ===
     // Pokud jsou nastaveny env proměnné, použijeme je místo náhodných.
     // Toto řeší situaci, kdy Render persistent disk neudrží databázi
     // mezi deployi – admin účet bude mít pokaždé stejné přihlašovací údaje.
@@ -400,6 +452,9 @@ async function seedAdmin() {
     const passwordHash = await bcrypt.hash(creds.password, 12);
     db.prepare('INSERT INTO users (username, password_hash, password_changed) VALUES (?, ?, 0)')
       .run(creds.username, passwordHash);
+
+    // Uložíme do backupu pro příště
+    saveAdminBackup(creds.username, passwordHash, false);
 
     console.log(`🔐 Vytvořen nový admin účet${useEnv ? ' (z ADMIN_USERNAME/ADMIN_PASSWORD)' : ''}`);
     printAdminCredentials(creds.username, creds.password);
@@ -441,4 +496,4 @@ async function refreshSiteSettingDefaults() {
   );
 }
 
-module.exports = { db, run, get, all, initDb };
+module.exports = { db, run, get, all, initDb, saveAdminBackup };
