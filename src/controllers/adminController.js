@@ -1,5 +1,5 @@
 const bcrypt = require('bcrypt');
-const { all, get, run, saveAdminBackup } = require('../models/db');
+const { all, get, run, saveAdminBackup, forceCheckpoint } = require('../models/db');
 const slugify = require('../utils/slugify');
 const { validateUrl, validatePassword, validateNumeric, validateEmail } = require('../utils/validators');
 
@@ -527,6 +527,9 @@ async function updateAccount(req, res) {
   // Uložíme změněné credentials do backup JSON souboru
   // (pro případ, že by se databáze ztratila při příštím deployi)
   saveAdminBackup(newUsername, passwordHash, true);
+
+  // Force WAL checkpoint — změna credentials musí přežít redeploy
+  forceCheckpoint();
 
   // Zneplatnění session po změně hesla – uživatel se musí přihlásit znovu
   delete req.session.mustChangePassword;

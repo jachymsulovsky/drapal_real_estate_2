@@ -233,6 +233,17 @@ async function initDb() {
   await seedSiteSettings();
   await refreshSiteSettingDefaults();
 
+  // === Vynucení WAL checkpointu ===
+  // Aby všechna seed data byla zapsána do hlavního DB souboru a přežila redeploy.
+  // Výchozí WAL mód zapisuje změny nejdříve do -wal souboru, který se může
+  // při restartu kontejneru ztratit. Checkpoint přesune data do hlavního souboru.
+  try {
+    db.pragma('wal_checkpoint(TRUNCATE)');
+    console.log('✅ WAL checkpoint completed');
+  } catch (_) {
+    console.log('⚠️  WAL checkpoint skipped');
+  }
+
   console.log('✅ Databáze inicializována');
 }
 
@@ -414,6 +425,8 @@ async function seedAdmin() {
     // Uložíme do backupu
     saveAdminBackup(creds.username, passwordHash, false);
 
+    forceCheckpoint();
+
     console.log('🔐 Resetován admin účet – ADMIN_PASSWORD_RESET=true');
     printAdminCredentials(creds.username, creds.password);
 
@@ -436,6 +449,7 @@ async function seedAdmin() {
       console.log('🔐 Obnovuji admin účet z backup souboru...');
       db.prepare('INSERT INTO users (username, password_hash, password_changed) VALUES (?, ?, ?)')
         .run(backup.username, backup.password_hash, backup.password_changed);
+      forceCheckpoint();
       console.log(`✅ Admin obnoven z backupu: ${backup.username} (password_changed=${backup.password_changed})`);
       return;
     }
@@ -455,6 +469,8 @@ async function seedAdmin() {
 
     // Uložíme do backupu pro příště
     saveAdminBackup(creds.username, passwordHash, false);
+
+    forceCheckpoint();
 
     console.log(`🔐 Vytvořen nový admin účet${useEnv ? ' (z ADMIN_USERNAME/ADMIN_PASSWORD)' : ''}`);
     printAdminCredentials(creds.username, creds.password);
@@ -496,4 +512,17 @@ async function refreshSiteSettingDefaults() {
   );
 }
 
-module.exports = { db, run, get, all, initDb, saveAdminBackup };
+/**
+ * Vynutí WAL checkpoint — přesune data z WAL souboru do hlavního DB souboru.
+ * Volá se po důležitých zápisech, aby data přežila redeploy kontejneru.
+ */
+function forceCheckpoint() {
+  try {
+    db.pragma('wal_checkpoint(TRUNCATE)');
+    console.log('📦 WAL checkpoint forced');
+  } catch (_) {
+    console.log('⚠️  WAL checkpoint failed');
+  }
+}
+
+module.exports = { db, run, get, all, initDb, saveAdminBackup, forceCheckpoint };

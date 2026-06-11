@@ -1,4 +1,4 @@
-Test deployment: ověření persistence admin přihlašovacích údajů
+Test deployment: ověření WAL checkpoint persistence admin účtu
 Datum: 11. června 2026
-Účel: Otestovat, že se po redeployi obnoví admin účet z backup JSON souboru
-Stav: Test č. 3 - po přihlášení a změně credentials v admin UI
+Účel: Otestovat WAL checkpoint fix - data v SQLite by nyní měla přežít redeploy
+Stav: Test č. 4 - WAL checkpoint po každém zápisu admina
