@@ -1,4 +1,4 @@
 Test deployment: ověření WAL checkpoint persistence admin účtu
 Datum: 11. června 2026
-Účel: Otestovat WAL checkpoint fix - data v SQLite by nyní měla přežít redeploy
-Stav: Test č. 4 - WAL checkpoint po každém zápisu admina
+Účel: Otestovat WAL checkpoint fix
+Stav: Test č. 5 - kontrola po WAL checkpoint opravě
