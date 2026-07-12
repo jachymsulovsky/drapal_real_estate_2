@@ -18,7 +18,7 @@ const crypto = require('crypto');
 const readline = require('readline');
 const bcrypt = require('bcrypt');
 
-const dataDir = path.join(__dirname, '..', 'data');
+const dataDir = path.resolve(process.cwd(), 'data');
 const dbPath = path.join(dataDir, 'drapal.sqlite');
 const command = process.argv[2];
 const forceReset = process.argv.includes('--force');

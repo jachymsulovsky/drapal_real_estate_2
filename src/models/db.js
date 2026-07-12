@@ -17,7 +17,7 @@ const fs = require('fs');
 const Database = require('better-sqlite3');
 const bcrypt = require('bcrypt');
 
-const dataDir = path.join(__dirname, '..', '..', 'data');
+const dataDir = path.resolve(process.cwd(), 'data');
 const dbPath = path.join(dataDir, 'drapal.sqlite');
 const adminBackupPath = path.join(dataDir, 'admin-backup.json');
 
@@ -391,9 +391,10 @@ async function seedAdmin() {
     const dbStat = fs.statSync(dbPath);
     console.log(`📁 DB cesta: ${dbPath}`);
     console.log(`📁 DB existuje: ano (${(dbStat.size / 1024).toFixed(0)} KB, modifikováno: ${dbStat.mtime.toISOString()})`);
+    console.log(`📁 Perzistentní data: ${dbStat.size > 0 ? 'Zachována' : 'Prázdná (možná se jedná o první běh nebo byl disk smazán)'}`);
   } catch (_) {
     console.log(`📁 DB cesta: ${dbPath}`);
-    console.log(`📁 DB existuje: NE – bude vytvořena`);
+    console.log(`📁 DB existuje: NE – bude vytvořena nová (Pokud očekáváte data, zkontrolujte připojení Persistent disku v Render dashboardu!)`);
   }
 
   const existing = db.prepare('SELECT id, username FROM users ORDER BY id ASC LIMIT 1').get();
