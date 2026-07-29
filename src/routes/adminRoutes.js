@@ -110,4 +110,25 @@ router.get('/contacts', requireAuth, asyncHandler(adminController.contacts));
 router.post('/contacts', ...withUpload(upload.any()), validateUploadedFiles, asyncHandler(adminController.updateContacts));
 router.post('/contacts/agents/:id/delete', ...csrfProtected, asyncHandler(adminController.deleteAgent));
 
+// About sekce
+router.get('/about', requireAuth, asyncHandler(adminController.aboutSection));
+router.post('/about', ...csrfProtected, asyncHandler(adminController.updateAboutSection));
+
+// Testimonials
+router.get('/testimonials', requireAuth, asyncHandler(adminController.testimonials));
+router.post('/testimonials', ...withUpload(upload.array('photos', 5)), validateUploadedFiles, asyncHandler(adminController.createTestimonial));
+router.post('/testimonials/:id/delete', ...csrfProtected, asyncHandler(adminController.deleteTestimonial));
+
+// Process steps
+router.get('/process', requireAuth, asyncHandler(adminController.processSteps));
+router.post('/process', ...csrfProtected, asyncHandler(adminController.updateProcessSteps));
+
+// Blog
+router.get('/blog', requireAuth, asyncHandler(adminController.blogPosts));
+router.get('/blog/new', requireAuth, asyncHandler(adminController.newBlogPost));
+router.post('/blog', ...withUpload(upload.array('images', 3)), validateUploadedFiles, asyncHandler(adminController.createBlogPost));
+router.get('/blog/:id/edit', requireAuth, asyncHandler(adminController.editBlogPost));
+router.post('/blog/:id', ...withUpload(upload.array('images', 3)), validateUploadedFiles, asyncHandler(adminController.updateBlogPost));
+router.post('/blog/:id/delete', ...csrfProtected, asyncHandler(adminController.deleteBlogPost));
+
 module.exports = router;

@@ -6,7 +6,13 @@
   </a>
   <nav class="main-nav" aria-label="Hlavní menu">
     <a class="<%= currentPath === '/' ? 'active' : '' %>" href="/">Nemovitosti</a>
+    <a class="<%= currentPath === '/o-nas' ? 'active' : '' %>" href="/o-nas">O nás</a>
+    <a class="<%= currentPath === '/reference' ? 'active' : '' %>" href="/reference">Reference</a>
+    <a class="<%= currentPath === '/blog' ? 'active' : '' %>" href="/blog">Blog</a>
     <a class="<%= currentPath === '/kontakt' ? 'active' : '' %>" href="/kontakt">Kontakt</a>
+    <a href="tel:<%= contact.phone %>" class="call-button" style="background: var(--accent); color: white; padding: 10px 18px; border-radius: 999px; font-weight: 800; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
+      📞 <span style="display: none;">Zavolejte nám</span>
+    </a>
     <button class="icon-button" type="button" data-theme-toggle aria-label="Přepnout režim">◐</button>
   </nav>
 </header>

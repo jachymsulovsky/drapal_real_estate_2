@@ -224,6 +224,102 @@ async function initDb() {
   db.exec('CREATE INDEX IF NOT EXISTS idx_audit_logs_user_id ON audit_logs(user_id)');
   db.exec('CREATE INDEX IF NOT EXISTS idx_audit_logs_action ON audit_logs(action)');
 
+  // ============================================================
+  // NOVÉ TABULKY PRO PRODEJNOST
+  // ============================================================
+
+  // O nás / About sekce
+  db.exec(`CREATE TABLE IF NOT EXISTS about_section (
+    id INTEGER PRIMARY KEY CHECK (id = 1),
+    title TEXT NOT NULL DEFAULT '',
+    subtitle TEXT NOT NULL DEFAULT '',
+    content TEXT NOT NULL DEFAULT '',
+    mission_title TEXT NOT NULL DEFAULT '',
+    mission_content TEXT NOT NULL DEFAULT '',
+    values_title TEXT NOT NULL DEFAULT '',
+    values_content TEXT NOT NULL DEFAULT '',
+    experience_years INTEGER DEFAULT 0,
+    properties_sold INTEGER DEFAULT 0,
+    happy_clients INTEGER DEFAULT 0,
+    team_members INTEGER DEFAULT 0
+  )`);
+
+  // Tým makléřů (rozšíření o veřejné zobrazení)
+  db.exec(`CREATE TABLE IF NOT EXISTS team_members (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    agent_id INTEGER UNIQUE,
+    name TEXT NOT NULL,
+    role TEXT NOT NULL,
+    photo_url TEXT NOT NULL,
+    bio TEXT NOT NULL,
+    phone TEXT NOT NULL,
+    email TEXT NOT NULL,
+    display_order INTEGER DEFAULT 0,
+    FOREIGN KEY(agent_id) REFERENCES agents(id) ON DELETE CASCADE
+  )`);
+
+  // Reference / Testimonials
+  db.exec(`CREATE TABLE IF NOT EXISTS testimonials (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    client_name TEXT NOT NULL,
+    client_photo_url TEXT NOT NULL DEFAULT '',
+    content TEXT NOT NULL,
+    rating INTEGER DEFAULT 5,
+    property_type TEXT NOT NULL DEFAULT '',
+    display_order INTEGER DEFAULT 0,
+    created_at TEXT DEFAULT CURRENT_TIMESTAMP
+  )`);
+
+  // Proces spolupráce
+  db.exec(`CREATE TABLE IF NOT EXISTS process_steps (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    step_number INTEGER NOT NULL,
+    title TEXT NOT NULL,
+    description TEXT NOT NULL,
+    icon TEXT NOT NULL DEFAULT '✓',
+    display_order INTEGER DEFAULT 0
+  )`);
+
+  // Blog články
+  db.exec(`CREATE TABLE IF NOT EXISTS blog_posts (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    title TEXT NOT NULL,
+    slug TEXT UNIQUE NOT NULL,
+    excerpt TEXT NOT NULL,
+    content TEXT NOT NULL,
+    featured_image_url TEXT NOT NULL DEFAULT '',
+    author_name TEXT NOT NULL DEFAULT '',
+    published_at TEXT DEFAULT CURRENT_TIMESTAMP,
+    created_at TEXT DEFAULT CURRENT_TIMESTAMP
+  )`);
+
+  // Uložené nemovitosti (wishlist) - localStorage na frontendu, zde pro případné rozšíření
+  db.exec(`CREATE TABLE IF NOT EXISTS saved_properties (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    session_id TEXT NOT NULL,
+    property_id INTEGER NOT NULL,
+    created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY(property_id) REFERENCES properties(id) ON DELETE CASCADE
+  )`);
+
+  // Zobrazení nemovitostí (pro analytiku)
+  db.exec(`CREATE TABLE IF NOT EXISTS property_views (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    property_id INTEGER NOT NULL,
+    ip_address TEXT NOT NULL,
+    user_agent TEXT NOT NULL DEFAULT '',
+    viewed_at TEXT DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY(property_id) REFERENCES properties(id) ON DELETE CASCADE
+  )`);
+
+  // Newsletter odběratelé
+  db.exec(`CREATE TABLE IF NOT EXISTS newsletter_subscribers (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    email TEXT UNIQUE NOT NULL,
+    name TEXT NOT NULL DEFAULT '',
+    subscribed_at TEXT DEFAULT CURRENT_TIMESTAMP
+  )`);
+
   // Migrace: přidání sloupce password_changed (pokud už existuje, ignorujeme chybu)
   try {
     db.exec("ALTER TABLE users ADD COLUMN password_changed INTEGER DEFAULT 1");
@@ -231,9 +327,32 @@ async function initDb() {
     // Sloupec už existuje — ignorujeme
   }
 
+  // Migrace: přidání sloupců pro role-based access control (RBAC)
+  try {
+    db.exec("ALTER TABLE users ADD COLUMN role TEXT DEFAULT 'admin'");
+  } catch (_) {
+    // Sloupec už existuje — ignorujeme
+  }
+
+  try {
+    db.exec("ALTER TABLE users ADD COLUMN agent_id INTEGER NULL");
+  } catch (_) {
+    // Sloupec už existuje — ignorujeme
+  }
+
+  // Indexy pro rychlejší dotazy podle role
+  try {
+    db.exec('CREATE INDEX IF NOT EXISTS idx_users_role ON users(role)');
+    db.exec('CREATE INDEX IF NOT EXISTS idx_users_agent_id ON users(agent_id)');
+  } catch (_) {
+    // Indexy už existují — ignorujeme
+  }
+
   await seedAdmin();
   await seedContactSettings();
   await seedSiteSettings();
+  await seedAboutSection();
+  await seedProcessSteps();
   await refreshSiteSettingDefaults();
 
   console.log('✅ Databáze inicializována');
@@ -325,7 +444,7 @@ Podat stížnost u Úřadu pro ochranu osobních údajů (www.uoou.cz).
 Pro uplatnění těchto práv mě můžete kdykoliv kontaktovat na e-mailové adrese: jachym@sulovsky.com.
 
 7. Převod správy údajů
-V případě budoucí komercializace projektu a převodu na jiný subjekt budou uživatelé o této změně správce údajů informováni. Veškeré závazky správce a práva subjektů údajů přejdou na nového správce, přičemž bude zajištěna kontinuita ochrany osobních údajů v souladu s platnou legislativou.
+V případě budoucí komercializace projektu a převodu na jiný subjekt budou uživatelé o této změně správce osobních údajů informováni. Veškeré závazky správce a práva subjektů údajů přejdou na nového správce, přičemž bude zajištěna kontinuita ochrany osobních údajů v souladu s platnou legislativou.
 
 8. Zabezpečení
 Přijal jsem přiměřená technická a organizační opatření k zabezpečení vašich údajů v rámci možností developerského projektu.`
@@ -494,10 +613,55 @@ async function seedSiteSettings() {
   }
 }
 
+async function seedAboutSection() {
+  const existing = db.prepare('SELECT id FROM about_section WHERE id = 1').get();
+  if (!existing) {
+    db.prepare(`INSERT INTO about_section
+      (id, title, subtitle, content, mission_title, mission_content, values_title, values_content,
+       experience_years, properties_sold, happy_clients, team_members)
+      VALUES (1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`).run(
+      'O nás',
+      'Váš důvěryhodný partner v oblasti nemovitostí',
+      'Jsme moderní realitní kancelář s více než 10 lety zkušeností na trhu. Naší misí je pomáhat klientům s prodejem, koupí a pronájmem nemovitostí na nejlepší možné podmínky.',
+      'Naše mise',
+      'Poskytovat profesionální realitní služby s důrazem na transparentnost, důvěru a maximální výsledek pro naše klienty.',
+      'Naše hodnoty',
+      'Důvěra, profesionalita, transparentnost a výsledek. Tyto hodnoty jsou základem všeho, co děláme.',
+      10,
+      200,
+      150,
+      5
+    );
+  }
+}
+
+async function seedProcessSteps() {
+  const steps = [
+    { step_number: 1, title: 'Konzultace', description: 'Proběhne osobní nebo online schůzka, kde se seznámíme s vašimi potřebami a požadavky na nemovitost.', icon: '💬' },
+    { step_number: 2, title: 'Ocenění', description: 'Provedeme profesionální oceňování nemovitosti na základě aktuálních tržních dat a srovnání s podobnými nemovitostmi.', icon: '📊' },
+    { step_number: 3, title: 'Marketing', description: 'Připravíme profesionální fotografii, videoprohlídku a zveřejníme nemovitost na všech relevantních platformách.', icon: '📢' },
+    { step_number: 4, title: 'Prodej', description: 'Zprostředkujeme prohlídky, vyjednáme nejlepší podmínky a zajišťujeme právní doprovod do podpisu smlouvy.', icon: '✅' }
+  ];
+
+  for (const step of steps) {
+    const existing = db.prepare('SELECT id FROM process_steps WHERE step_number = ?').get(step.step_number);
+    if (!existing) {
+      db.prepare(`INSERT INTO process_steps (step_number, title, description, icon, display_order)
+        VALUES (?, ?, ?, ?, ?)`).run(
+        step.step_number,
+        step.title,
+        step.description,
+        step.icon,
+        step.step_number
+      );
+    }
+  }
+}
+
 async function refreshSiteSettingDefaults() {
   db.prepare('UPDATE site_settings SET value = ? WHERE key = ? AND value = ?').run(
     defaultSiteSettings.contact_map_embed_url, 'contact_map_embed_url',
-    'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2524.316!2d15.056!3d50.767!2m3!1f0!2f0!3f0!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x470935b61a53b5f9%3A0x99cdace46aefe6d5!2sDobrodru%C5%BEn%C3%A1%202074%2F2%2C%20463%2012%20Liberec-Vesec!5e0!3m2!1scs!2scz!4v1780217264816!5m2!1scs!2scz'
+    'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2524.316!2d15.056!3d50.767!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x470935b61a53b5f9%3A0x99cdace46aefe6d5!2sDobrodru%C5%BEn%C3%A1%202074%2F2%2C%20463%2012%20Liberec-Vesec!5e0!3m2!1scs!2scz!4v1780217264816!5m2!1scs!2scz'
   );
   db.prepare('UPDATE site_settings SET value = ? WHERE key = ? AND value = ?').run(
     defaultSiteSettings.privacy_content, 'privacy_content', ''

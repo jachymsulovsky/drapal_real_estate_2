@@ -1,0 +1,48 @@
+<%- include('partials/head') %>
+<%- include('partials/header') %>
+
+<main>
+  <section class="hero" style="--hero-image: url('<%= settings.hero_image_url %>'); min-height: 40vh;">
+    <div class="hero-content">
+      <p class="eyebrow">Blog</p>
+      <h1>Novinky a tipy ze světa nemovitostí</h1>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="property-grid">
+      <% posts.forEach((post) => { %>
+        <article class="property-card">
+          <a href="/blog/<%= post.slug %>">
+            <% if (post.featured_image_url) { %>
+              <img src="<%= post.featured_image_url %>" alt="<%= post.title %>">
+            <% } else { %>
+              <div style="width: 100%; aspect-ratio: 4/3; background: linear-gradient(135deg, var(--primary) 0%, var(--primary-strong) 100%); display: flex; align-items: center; justify-content: center; color: white; font-size: 4rem; font-weight: 800;">
+                📝
+              </div>
+            <% } %>
+            <div class="property-card-body">
+              <div class="status-row">
+                <span><%= post.published_at ? new Date(post.published_at).toLocaleDateString('cs-CZ') : '' %></span>
+                <span><%= post.author_name || 'Drápal Real Estate' %></span>
+              </div>
+              <h3><%= post.title %></h3>
+              <p style="color: var(--muted); line-height: 1.6; margin-bottom: 12px;">
+                <%= post.excerpt.substring(0, 150) %>...
+              </p>
+              <span class="button secondary" style="display: inline-block; padding: 8px 16px; font-size: 0.9rem;">Číst více →</span>
+            </div>
+          </a>
+        </article>
+      <% }) %>
+    </div>
+
+    <% if (posts.length === 0) { %>
+      <div class="admin-card" style="padding: 48px; text-align: center;">
+        <p style="color: var(--muted); font-size: 1.1rem;">Zatím nejsou k dispozici žádné články.</p>
+      </div>
+    <% } %>
+  </section>
+</main>
+
+<%- include('partials/footer') %>

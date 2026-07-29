@@ -1,0 +1,43 @@
+<%- include('partials/head') %>
+<%- include('partials/header') %>
+
+<main>
+  <section class="hero" style="--hero-image: url('<%= post.featured_image_url || settings.hero_image_url %>'); min-height: 40vh;">
+    <div class="hero-content">
+      <p class="eyebrow">Blog</p>
+      <h1><%= post.title %></h1>
+      <p><%= post.author_name || 'Drápal Real Estate' %> · <%= new Date(post.published_at).toLocaleDateString('cs-CZ') %></p>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="detail-layout">
+      <div>
+        <div class="rich-text-content" style="line-height: 1.8; font-size: 1.1rem;">
+          <p><%= post.content.replace(/\n/g, '</p><p>') %></p>
+        </div>
+      </div>
+      
+      <div class="contact-panel">
+        <div class="contact-facts">
+          <h3 style="margin-top: 0;">Máte dotaz?</h3>
+          <p style="color: var(--muted); margin-bottom: 20px;">Kontaktujte nás a my vám pomůžeme s vaší nemovitostí.</p>
+          <p><strong>Telefon:</strong> <a href="tel:<%= contact.phone %>"><%= contact.phone %></a></p>
+          <p><strong>E-mail:</strong> <a href="mailto:<%= contact.email %>"><%= contact.email %></a></p>
+          <a class="button" href="/kontakt" style="width: 100%; margin-top: 16px;">Napište nám</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">Další články</p>
+        <h2>Mohlo by vás zajímat</h2>
+      </div>
+    </div>
+  </section>
+</main>
+
+<%- include('partials/footer') %>

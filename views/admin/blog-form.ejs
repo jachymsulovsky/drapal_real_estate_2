@@ -1,0 +1,39 @@
+<%- include('../partials/admin-head') %>
+<%- include('../partials/admin-nav') %>
+<section class="admin-header">
+  <div>
+    <p class="eyebrow">Obsah webu</p>
+    <h1><%= title %></h1>
+  </div>
+</section>
+
+<form class="admin-form" method="post" action="<%= action %>" enctype="multipart/form-data">
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+  
+  <section class="admin-card">
+    <h2>Základní informace</h2>
+    <div class="form-grid">
+      <label>Nadpis článku<input name="title" value="<%= post.title || '' %>" required></label>
+      <label>Autor<input name="author_name" value="<%= post.author_name || 'Drápal Real Estate' %>"></label>
+    </div>
+    <label>Krátký popis (excerpt)<textarea name="excerpt" rows="3" required placeholder="Zobrazí se v přehledu článků..."><%= post.excerpt || '' %></textarea></label>
+  </section>
+
+  <section class="admin-card">
+    <h2>Obsah článku</h2>
+    <label>Text článku<textarea name="content" rows="15" required placeholder="Napište obsah článku..."><%= post.content || '' %></textarea></label>
+  </section>
+
+  <section class="admin-card">
+    <h2>Hlavní obrázek</h2>
+    <% if (post.featured_image_url) { %>
+      <img class="asset-preview" src="<%= post.featured_image_url %>" alt="Hlavní obrázek">
+    <% } %>
+    <label>Nahrát obrázek<input type="file" name="images" accept="image/*"></label>
+  </section>
+
+  <button class="button" type="submit">Uložit článek</button>
+  <a class="button secondary" href="/admin/blog">Zrušit</a>
+</form>
+
+<%- include('../partials/admin-foot') %>

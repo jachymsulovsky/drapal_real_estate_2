@@ -1,0 +1,50 @@
+<%- include('../partials/admin-head') %>
+<%- include('../partials/admin-nav') %>
+<section class="admin-header">
+  <div>
+    <p class="eyebrow">Obsah webu</p>
+    <h1>Reference</h1>
+  </div>
+</section>
+
+<section class="admin-card">
+  <h2>Přidat novou referenci</h2>
+  <form class="admin-form" method="post" action="/admin/testimonials" enctype="multipart/form-data">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <div class="form-grid">
+      <label>Jméno klienta<input name="client_name" required></label>
+      <label>Typ nemovitosti<input name="property_type" placeholder="např. Byt, Dům"></label>
+      <label>Hodnocení (1-5)<input type="number" name="rating" value="5" min="1" max="5"></label>
+      <label>Fotografie klienta<input type="file" name="photos" accept="image/*"></label>
+    </div>
+    <label>Text reference<textarea name="content" rows="5" required placeholder="Napište text reference..."></textarea></label>
+    <button class="button" type="submit">Přidat referenci</button>
+  </form>
+</section>
+
+<section class="admin-card">
+  <h2>Seznam referencí</h2>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Klient</th><th>Typ</th><th>Hodnocení</th><th>Text</th><th>Akce</th></tr></thead>
+      <tbody>
+        <% testimonials.forEach((item) => { %>
+          <tr>
+            <td><%= item.client_name %></td>
+            <td><%= item.property_type || '-' %></td>
+            <td><%= '⭐'.repeat(item.rating) %></td>
+            <td><%= item.content.substring(0, 100) %>...</td>
+            <td>
+              <form method="post" action="/admin/testimonials/<%= item.id %>/delete" style="display:inline;" onsubmit="return confirm('Smazat referenci?')">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                <button class="button danger small" type="submit">Smazat</button>
+              </form>
+            </td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<%- include('../partials/admin-foot') %>

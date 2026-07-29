@@ -1,0 +1,33 @@
+<%- include('../partials/admin-head') %>
+<%- include('../partials/admin-nav') %>
+<section class="admin-header">
+  <div>
+    <p class="eyebrow">Obsah webu</p>
+    <h1>Proces spolupráce</h1>
+  </div>
+</section>
+
+<form class="admin-form" method="post" action="/admin/process">
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+  
+  <section class="admin-card">
+    <h2>Kroky procesu</h2>
+    <p style="color: var(--muted); margin-bottom: 20px;">Nakonfigurujte 4 kroky procesu spolupráce s klientem.</p>
+    
+    <% steps.forEach((step, index) => { %>
+      <div class="process-step-editor" style="padding: 20px; margin-bottom: 16px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg);">
+        <h3 style="margin-top: 0;">Krok <%= index + 1 %></h3>
+        <div class="form-grid">
+          <label>Číslo kroku<input type="number" name="step_number" value="<%= step.step_number %>" min="1" max="10"></label>
+          <label>Ikona (emoji)<input name="step_icon" value="<%= step.icon || '✓' %>" placeholder="např. 💬 📊 📢 ✅"></label>
+        </div>
+        <label>Nadpis kroku<input name="step_title" value="<%= step.title || '' %>" required style="margin-top: 12px;"></label>
+        <label>Popis kroku<textarea name="step_description" rows="3" required style="margin-top: 12px;"><%= step.description || '' %></textarea></label>
+      </div>
+    <% }) %>
+  </section>
+
+  <button class="button" type="submit">Uložit proces</button>
+</form>
+
+<%- include('../partials/admin-foot') %>

@@ -204,4 +204,188 @@
       filterForm.appendChild(resetBtn);
     }
   }
+
+  //
+  // ============================================================
+  // SCROLL ANIMACE — Fade-in efekty při scrollování
+  // ============================================================
+  // Přidáváme třídu 'visible' k elementům, když se dostanou
+  // do viewportu. Používáme Intersection Observer API.
+  // ============================================================
+  //
+  const observerOptions = {
+    threshold: 0.1,
+    rootMargin: '0px 0px -50px 0px'
+  };
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+        observer.unobserve(entry.target); // Animovat pouze jednou
+      }
+    });
+  }, observerOptions);
+
+  // Sledujeme všechny karty a sekce
+  document.querySelectorAll('.property-card, .admin-card, .section-heading, .stats-grid > div').forEach((el) => {
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(20px)';
+    el.style.transition = 'opacity 600ms ease, transform 600ms ease';
+    observer.observe(el);
+  });
+
+  // CSS pro visible třídu
+  const style = document.createElement('style');
+  style.textContent = `
+    .property-card.visible,
+    .admin-card.visible,
+    .section-heading.visible,
+    .stats-grid > div.visible {
+      opacity: 1 !important;
+      transform: translateY(0) !important;
+    }
+  `;
+  document.head.appendChild(style);
+
+  //
+  // ============================================================
+  // STAGGERED ANIMACE — Postupné objevení karet
+  // ============================================================
+  // Každá karta se objeví s malým zpožděním pro efekt "vlny".
+  // ============================================================
+  //
+  const cards = document.querySelectorAll('.property-card, .stats-grid > div');
+  cards.forEach((card, index) => {
+    card.style.transitionDelay = `${index * 50}ms`;
+  });
+
+  //
+  // ============================================================
+  // SMOOTH SCROLL — Plynulé scrollování pro CTA tlačítka
+  // ============================================================
+  // Všechna tlačítka s href="#..." scrollují plynule.
+  // ============================================================
+  //
+  document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
+    anchor.addEventListener('click', function(e) {
+      const targetId = this.getAttribute('href');
+      if (targetId === '#') return;
+
+      const target = document.querySelector(targetId);
+      if (target) {
+        e.preventDefault();
+        const headerOffset = 80;
+        const elementPosition = target.getBoundingClientRect().top;
+        const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+
+        window.scrollTo({
+          top: offsetPosition,
+          behavior: 'smooth'
+        });
+      }
+    });
+  });
+
+  //
+  // ============================================================
+  // COUNTER ANIMACE — Animace čísel v statistikách
+  // ============================================================
+  // Při scrollování na sekci se čísla animují od 0 do cílové hodnoty.
+  // ============================================================
+  //
+  function animateCounter(element, target, duration = 2000) {
+    const start = 0;
+    const increment = target / (duration / 16); // 60fps
+    let current = start;
+
+    const timer = setInterval(() => {
+      current += increment;
+      if (current >= target) {
+        current = target;
+        clearInterval(timer);
+      }
+      element.textContent = Math.floor(current) + '+';
+    }, 16);
+  }
+
+  const statsObserver = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) {
+        const statValue = entry.target.querySelector('strong');
+        if (statValue && !statValue.dataset.animated) {
+          const text = statValue.textContent.replace(/[^0-9]/g, '');
+          const target = parseInt(text) || 0;
+          if (target > 0) {
+            statValue.dataset.animated = 'true';
+            animateCounter(statValue, target);
+          }
+        }
+        statsObserver.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.5 });
+
+  document.querySelectorAll('.stats-grid > div').forEach((stat) => {
+    statsObserver.observe(stat);
+  });
+
+  //
+  // ============================================================
+  // HOVER EFEKTY — Zvýraznění karet při najetí
+  // ============================================================
+  // Přidáváme jemné zvýraznění pro lepší UX.
+  // ============================================================
+  //
+  document.querySelectorAll('.property-card, .admin-card').forEach((card) => {
+    card.addEventListener('mouseenter', function() {
+      this.style.transform = 'translateY(-4px)';
+      this.style.boxShadow = '0 30px 72px rgba(15, 23, 42, 0.12)';
+    });
+
+    card.addEventListener('mouseleave', function() {
+      this.style.transform = 'translateY(0)';
+      this.style.boxShadow = '';
+    });
+  });
+
+  //
+  // ============================================================
+  // LAZY LOADING — Zobrazení placeholderu během načítání
+  // ============================================================
+  // Přidáváme třídu 'loaded' po načtení obrázku.
+  // ============================================================
+  //
+  document.querySelectorAll('img[loading="lazy"]').forEach((img) => {
+    img.style.opacity = '0';
+    img.style.transition = 'opacity 300ms ease';
+
+    if (img.complete) {
+      img.style.opacity = '1';
+    } else {
+      img.addEventListener('load', () => {
+        img.style.opacity = '1';
+      });
+    }
+  });
+
+  //
+  // ============================================================
+  // TELEFONNÍ TLAČÍTKO — Zobrazení textu na hover
+  // ============================================================
+  // Na desktopu zobrazí text "Zavolejte nám" při najetí.
+  // ============================================================
+  //
+  const callButton = document.querySelector('.call-button');
+  if (callButton && window.innerWidth > 640) {
+    const span = callButton.querySelector('span');
+    if (span) {
+      callButton.addEventListener('mouseenter', () => {
+        span.style.display = 'inline';
+      });
+      callButton.addEventListener('mouseleave', () => {
+        span.style.display = 'none';
+      });
+    }
+  }
 })();

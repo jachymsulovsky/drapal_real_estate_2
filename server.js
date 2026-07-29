@@ -10,6 +10,7 @@ const { ensureCsrfToken } = require('./src/utils/csrf');
 const { initDb, all, db } = require('./src/models/db');
 const publicRoutes = require('./src/routes/publicRoutes');
 const adminRoutes = require('./src/routes/adminRoutes');
+const agentRoutes = require('./src/routes/agentRoutes');
 
 // Bezpečnostní varování – pokud není nastaven SESSION_SECRET
 if (!process.env.SESSION_SECRET) {
@@ -167,6 +168,9 @@ app.get('/sitemap.xml', async (req, res) => {
     // Statické stránky, které chceme v sitemapě
     const staticPages = [
       { loc: '/', changefreq: 'daily', priority: '1.0' },
+      { loc: '/o-nas', changefreq: 'monthly', priority: '0.9' },
+      { loc: '/reference', changefreq: 'weekly', priority: '0.8' },
+      { loc: '/blog', changefreq: 'weekly', priority: '0.8' },
       { loc: '/kontakt', changefreq: 'monthly', priority: '0.8' },
       { loc: '/ochrana-osobnich-udaju', changefreq: 'monthly', priority: '0.5' },
     ];
@@ -200,6 +204,7 @@ app.get('/sitemap.xml', async (req, res) => {
 
 app.use('/', publicRoutes);
 app.use('/admin', adminRoutes);
+app.use('/agent', agentRoutes);
 
 app.use((error, req, res, next) => {
   console.error(error);

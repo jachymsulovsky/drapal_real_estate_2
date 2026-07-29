@@ -164,6 +164,57 @@ async function contactPage(req, res) {
   });
 }
 
+async function aboutPage(req, res) {
+  const about = await get('SELECT * FROM about_section WHERE id = 1');
+  const team = await all('SELECT * FROM team_members ORDER BY display_order, id');
+  const shared = await getSharedData();
+
+  res.render('about', {
+    title: `O nás | ${shared.settings.site_name || 'Drápal Real Estate'}`,
+    about: about || {},
+    team,
+    ...shared
+  });
+}
+
+async function testimonialsPage(req, res) {
+  const testimonials = await all('SELECT * FROM testimonials ORDER BY display_order, created_at DESC');
+  const shared = await getSharedData();
+
+  res.render('testimonials', {
+    title: `Reference | ${shared.settings.site_name || 'Drápal Real Estate'}`,
+    testimonials,
+    ...shared
+  });
+}
+
+async function blogPage(req, res) {
+  const posts = await all('SELECT * FROM blog_posts ORDER BY created_at DESC');
+  const shared = await getSharedData();
+
+  res.render('blog', {
+    title: `Blog | ${shared.settings.site_name || 'Drápal Real Estate'}`,
+    posts,
+    ...shared
+  });
+}
+
+async function blogPostDetail(req, res) {
+  const post = await get('SELECT * FROM blog_posts WHERE slug = ?', [req.params.slug]);
+  
+  if (!post) {
+    return res.status(404).render('404', { title: 'Článek nenalezen' });
+  }
+
+  const shared = await getSharedData();
+
+  return res.render('blog-post', {
+    title: `${post.title} | ${shared.settings.site_name || 'Drápal Real Estate'}`,
+    post,
+    ...shared
+  });
+}
+
 async function privacyPolicyPage(req, res) {
   const shared = await getSharedData();
 
@@ -257,4 +308,16 @@ async function submitInquiry(req, res) {
   return res.redirect('/kontakt?sent=1');
 }
 
-module.exports = { home, propertyDetail, contactPage, privacyPolicyPage, submitInquiry, getSharedData, validateInquiry };
+module.exports = { 
+  home, 
+  propertyDetail, 
+  contactPage, 
+  aboutPage, 
+  testimonialsPage, 
+  blogPage, 
+  blogPostDetail,
+  privacyPolicyPage, 
+  submitInquiry, 
+  getSharedData, 
+  validateInquiry 
+};

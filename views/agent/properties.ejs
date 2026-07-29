@@ -1,0 +1,35 @@
+<%- include('../partials/admin-head') %>
+<%- include('../partials/admin-nav') %>
+<section class="admin-header">
+  <div>
+    <p class="eyebrow">Agent</p>
+    <h1>Moje nemovitosti</h1>
+  </div>
+  <a class="button secondary" href="/agent/properties/new">+ Přidat nemovitost</a>
+</section>
+
+<section class="admin-card">
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Nadpis</th><th>Lokalita</th><th>Cena</th><th>Stav</th><th>Akce</th></tr></thead>
+      <tbody>
+        <% properties.forEach((property) => { %>
+          <tr>
+            <td><%= property.title %></td>
+            <td><%= property.location %></td>
+            <td><%= property.price ? property.price.toLocaleString('cs-CZ') + ' Kč' : '-' %></td>
+            <td><span class="badge"><%= property.status %></span></td>
+            <td>
+              <a class="button secondary small" href="/agent/properties/<%= property.id %>/edit">Upravit</a>
+              <form method="post" action="/agent/properties/<%= property.id %>/delete" style="display:inline;" onsubmit="return confirm('Smazat nemovitost?')">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                <button class="button danger small" type="submit">Smazat</button>
+              </form>
+            </td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+</section>
+<%- include('../partials/admin-foot') %>

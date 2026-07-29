@@ -1,0 +1,43 @@
+<%- include('../partials/admin-head') %>
+<%- include('../partials/admin-nav') %>
+<section class="admin-header">
+  <div>
+    <p class="eyebrow">Agent</p>
+    <h1>Můj profil</h1>
+  </div>
+</section>
+
+<% if (errors && errors.length) { %>
+  <div class="flash error">
+    <% errors.forEach((error) => { %>
+      <p><%= error %></p>
+    <% }) %>
+  </div>
+<% } %>
+
+<form class="admin-form" method="post" action="/agent/profile" enctype="multipart/form-data">
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+  
+  <section class="admin-card">
+    <h2>Základní informace</h2>
+    <div class="form-grid">
+      <label>Jméno a příjmení<input name="name" value="<%= agent.name || '' %>" required></label>
+      <label>Pozice<input name="role" value="<%= agent.role || '' %>" required></label>
+      <label>Telefon<input name="phone" value="<%= agent.phone || '' %>" required></label>
+      <label>E-mail<input name="email" type="email" value="<%= agent.email || '' %>" required></label>
+    </div>
+    <label>Bio<textarea name="bio" rows="5"><%= agent.bio || '' %></textarea></label>
+  </section>
+
+  <section class="admin-card">
+    <h2>Profilová fotografie</h2>
+    <% if (agent.photo_url) { %>
+      <img class="asset-preview" src="<%= agent.photo_url %>" alt="Profilová fotografie">
+    <% } %>
+    <label>Nahrát fotografii<input type="file" name="photo_file" accept="image/*"></label>
+    <label>Nebo zadejte URL<input name="photo_url" value="<%= agent.photo_url || '' %>" placeholder="https://..."></label>
+  </section>
+
+  <button class="button" type="submit">Uložit profil</button>
+</form>
+<%- include('../partials/admin-foot') %>

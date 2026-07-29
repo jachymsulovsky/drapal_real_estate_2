@@ -1,4 +1,4 @@
-dobř<%- include('partials/head') %>
+<%- include('partials/head') %>
 <%- include('partials/header') %>
 
 <main>
@@ -9,6 +9,12 @@ dobř<%- include('partials/head') %>
       <p><%= settings.home_hero_text || 'Moderní prodej, pronájem a investiční poradenství pro nemovitosti, které si zaslouží prvotřídní prezentaci.' %></p>
       <a class="button" href="#nabidka"><%= settings.home_hero_button || 'Prohlédnout nabídku' %></a>
     </div>
+  </section>
+
+  <section class="section" style="background: linear-gradient(135deg, var(--primary) 0%, var(--primary-strong) 100%); padding: 48px 40px; border-radius: 28px; text-align: center; color: white; margin-bottom: 48px;">
+    <h2 style="color: white; margin-bottom: 16px;">Hledáte svůj sen?</h2>
+    <p style="font-size: 1.1rem; margin-bottom: 24px; opacity: 0.9;">Napište nám a my vám pomůžeme s prodejem, koupí nebo pronájmem nemovitosti.</p>
+    <a class="button" href="/kontakt" style="background: white; color: var(--primary); box-shadow: 0 14px 32px rgba(0, 0, 0, 0.2); font-size: 1.1rem; padding: 16px 32px;">Kontaktujte nás</a>
   </section>
 
   <section class="section" id="nabidka">
@@ -49,7 +55,7 @@ dobř<%- include('partials/head') %>
       <% properties.forEach((property) => { %>
         <article class="property-card">
           <a href="/nemovitost/<%= property.slug %>">
-            <img src="<%= property.image_url %>" alt="<%= property.title %>">
+            <img src="<%= property.image_url %>" alt="<%= property.title %>" loading="lazy">
             <div class="property-card-body">
               <div class="status-row">
                 <span class="badge"><%= property.status %></span>
@@ -58,12 +64,19 @@ dobř<%- include('partials/head') %>
               <h3><%= property.title %></h3>
               <p><%= property.location %> · <%= property.area %></p>
               <strong><%= property.price.toLocaleString('cs-CZ') %> Kč</strong>
+              <a href="/kontakt?property=<%= property.id %>" class="button secondary" style="width: 100%; margin-top: 12px; text-align: center;">Zjistit více</a>
             </div>
           </a>
         </article>
       <% }) %>
     </div>
   </section>
+
+  <!-- Sticky CTA pro mobil -->
+  <div class="sticky-cta">
+    <a href="tel:<%= contact.phone %>" class="button" style="background: var(--accent);">📞 Zavolejte</a>
+    <a href="/kontakt" class="button ghost">Napište nám</a>
+  </div>
 </main>
 
 <%- include('partials/footer') %>

@@ -1,0 +1,135 @@
+<%- include('partials/head') %>
+<%- include('partials/header') %>
+
+<main>
+  <section class="hero" style="--hero-image: url('<%= settings.hero_image_url %>'); min-height: 50vh;">
+    <div class="hero-content">
+      <p class="eyebrow"><%= about.title || 'O nás' %></p>
+      <h1><%= about.subtitle || 'Váš důvěryhodný partner v oblasti nemovitostí' %></h1>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="detail-layout">
+      <div>
+        <div class="eyebrow">Náš příběh</div>
+        <h2 style="margin-top: 8px;"><%= about.title || 'O nás' %></h2>
+        <div class="rich-text-content" style="margin-top: 20px; line-height: 1.8; color: var(--muted);">
+          <p><%= about.content || '' %></p>
+        </div>
+      </div>
+      
+      <div class="contact-panel">
+        <div class="contact-facts">
+          <h3 style="margin-top: 0;">Kontaktujte nás</h3>
+          <p><strong>Telefon:</strong> <a href="tel:<%= contact.phone %>"><%= contact.phone %></a></p>
+          <p><strong>E-mail:</strong> <a href="mailto:<%= contact.email %>"><%= contact.email %></a></p>
+          <p><strong>Adresa:</strong> <%= contact.address %></p>
+          <p><strong>Otevírací doba:</strong> <%= contact.opening_hours %></p>
+          <a class="button" href="/kontakt" style="width: 100%; margin-top: 16px;">Napište nám</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <% if (about.mission_title || about.values_title) { %>
+  <section class="section" style="background: var(--bg);">
+    <div class="detail-layout">
+      <% if (about.mission_title) { %>
+      <div class="admin-card" style="padding: 32px;">
+        <h3 style="margin-top: 0; color: var(--primary);"><%= about.mission_title %></h3>
+        <p style="line-height: 1.8; color: var(--muted);"><%= about.mission_content %></p>
+      </div>
+      <% } %>
+      
+      <% if (about.values_title) { %>
+      <div class="admin-card" style="padding: 32px;">
+        <h3 style="margin-top: 0; color: var(--primary);"><%= about.values_title %></h3>
+        <p style="line-height: 1.8; color: var(--muted);"><%= about.values_content %></p>
+      </div>
+      <% } %>
+    </div>
+  </section>
+  <% } %>
+
+  <% 
+    const stats = [
+      { value: about.experience_years || 0, label: 'Let zkušeností', icon: '📅' },
+      { value: about.properties_sold || 0, label: 'Prodaných nemovitostí', icon: '🏠' },
+      { value: about.happy_clients || 0, label: 'Spokojených klientů', icon: '😊' },
+      { value: about.team_members || 0, label: 'Členů týmu', icon: '👥' }
+    ];
+  %>
+  
+  <section class="section">
+    <div class="stats-grid">
+      <% stats.forEach((stat) => { %>
+        <div class="admin-card" style="padding: 24px; text-align: center;">
+          <div style="font-size: 3rem; margin-bottom: 12px;"><%= stat.icon %></div>
+          <strong style="font-size: 2.5rem; color: var(--primary); display: block; margin-bottom: 8px;">
+            <%= stat.value %>+
+          </strong>
+          <span style="color: var(--muted); font-weight: 600;"><%= stat.label %></span>
+        </div>
+      <% }) %>
+    </div>
+  </section>
+
+  <% if (team && team.length > 0) { %>
+  <section class="section" style="background: var(--bg);">
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">Náš tým</p>
+        <h2>Profesionálové, na které se můžete spolehnout</h2>
+      </div>
+    </div>
+    
+    <div class="agent-grid">
+      <% team.forEach((member) => { %>
+        <div class="agent-card">
+          <img src="<%= member.photo_url %>" alt="<%= member.name %>">
+          <div class="property-card-body">
+            <h3><%= member.name %></h3>
+            <p style="color: var(--primary); font-weight: 600; margin-bottom: 8px;"><%= member.role %></p>
+            <p style="color: var(--muted); font-size: 0.9rem; line-height: 1.6; margin-bottom: 12px;">
+              <%= member.bio %>
+            </p>
+            <a href="tel:<%= member.phone %>" style="color: var(--primary); font-weight: 700;">📞 <%= member.phone %></a>
+            <a href="mailto:<%= member.email %>" style="color: var(--primary); font-weight: 700; display: block; margin-top: 4px;">✉️ <%= member.email %></a>
+          </div>
+        </div>
+      <% }) %>
+    </div>
+  </section>
+  <% } %>
+
+  <section class="section">
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">Proces spolupráce</p>
+        <h2>Jak to funguje?</h2>
+      </div>
+    </div>
+    
+    <div class="stats-grid" style="grid-template-columns: repeat(4, minmax(0, 1fr));">
+      <% 
+        const processSteps = [
+          { number: 1, title: 'Konzultace', desc: 'Seznámíme se s vašimi potřebami', icon: '💬' },
+          { number: 2, title: 'Ocenění', desc: 'Zjistíme tržní hodnotu nemovitosti', icon: '📊' },
+          { number: 3, title: 'Marketing', desc: 'Připravíme profesionální prezentaci', icon: '📢' },
+          { number: 4, title: 'Prodej', desc: 'Zprostředkujeme nejlepší podmínky', icon: '✅' }
+        ];
+      %>
+      <% processSteps.forEach((step) => { %>
+        <div class="admin-card" style="padding: 24px; text-align: center; position: relative;">
+          <div style="font-size: 3rem; margin-bottom: 12px;"><%= step.icon %></div>
+          <div style="position: absolute; top: 16px; right: 16px; width: 32px; height: 32px; background: var(--primary); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800;"><%= step.number %></div>
+          <h3 style="margin: 12px 0 8px; font-size: 1.2rem;"><%= step.title %></h3>
+          <p style="color: var(--muted); font-size: 0.9rem; margin: 0;"><%= step.desc %></p>
+        </div>
+      <% }) %>
+    </div>
+  </section>
+</main>
+
+<%- include('partials/footer') %>

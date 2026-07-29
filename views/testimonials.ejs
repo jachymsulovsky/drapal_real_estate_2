@@ -1,0 +1,88 @@
+<%- include('partials/head') %>
+<%- include('partials/header') %>
+
+<main>
+  <section class="hero" style="--hero-image: url('<%= settings.hero_image_url %>'); min-height: 40vh;">
+    <div class="hero-content">
+      <p class="eyebrow">Reference</p>
+      <h1>Co o nás říkají naši klienti</h1>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="stats-grid" style="grid-template-columns: repeat(3, minmax(0, 1fr)); margin-bottom: 48px;">
+      <div class="admin-card" style="padding: 24px; text-align: center;">
+        <div style="font-size: 3rem; margin-bottom: 12px;">⭐</div>
+        <strong style="font-size: 2.5rem; color: var(--primary); display: block; margin-bottom: 8px;">
+          5.0
+        </strong>
+        <span style="color: var(--muted); font-weight: 600;">Průměrné hodnocení</span>
+      </div>
+      <div class="admin-card" style="padding: 24px; text-align: center;">
+        <div style="font-size: 3rem; margin-bottom: 12px;">😊</div>
+        <strong style="font-size: 2.5rem; color: var(--primary); display: block; margin-bottom: 8px;">
+          100%
+        </strong>
+        <span style="color: var(--muted); font-weight: 600;">Spokojených klientů</span>
+      </div>
+      <div class="admin-card" style="padding: 24px; text-align: center;">
+        <div style="font-size: 3rem; margin-bottom: 12px;">🏠</div>
+        <strong style="font-size: 2.5rem; color: var(--primary); display: block; margin-bottom: 8px;">
+          200+
+        </strong>
+        <span style="color: var(--muted); font-weight: 600;">Úspěšných transakcí</span>
+      </div>
+    </div>
+
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">Naše reference</p>
+        <h2>Příběhy spokojených klientů</h2>
+      </div>
+    </div>
+
+    <div class="property-grid" style="grid-template-columns: repeat(2, minmax(0, 1fr));">
+      <% testimonials.forEach((item) => { %>
+        <div class="admin-card" style="padding: 28px; transition: transform 220ms ease, box-shadow 220ms ease;">
+          <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 16px;">
+            <% if (item.client_photo_url) { %>
+              <img src="<%= item.client_photo_url %>" alt="<%= item.client_name %>" style="width: 60px; height: 60px; border-radius: 50%; object-fit: cover;">
+            <% } else { %>
+              <div style="width: 60px; height: 60px; border-radius: 50%; background: var(--primary); color: white; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: 800;">
+                <%= item.client_name.charAt(0).toUpperCase() %>
+              </div>
+            <% } %>
+            <div>
+              <h3 style="margin: 0; font-size: 1.1rem;"><%= item.client_name %></h3>
+              <p style="margin: 4px 0 0; color: var(--muted); font-size: 0.9rem;">
+                <%= item.property_type || 'Klient' %>
+              </p>
+            </div>
+          </div>
+          
+          <div style="color: var(--accent); font-size: 1.2rem; margin-bottom: 12px;">
+            <%= '⭐'.repeat(item.rating) %>
+          </div>
+          
+          <p style="color: var(--muted); line-height: 1.7; margin: 0; font-style: italic;">
+            "<%= item.content %>"
+          </p>
+        </div>
+      <% }) %>
+    </div>
+
+    <% if (testimonials.length === 0) { %>
+      <div class="admin-card" style="padding: 48px; text-align: center;">
+        <p style="color: var(--muted); font-size: 1.1rem;">Zatím nejsou k dispozici žádné reference.</p>
+      </div>
+    <% } %>
+  </section>
+
+  <section class="section" style="background: linear-gradient(135deg, var(--primary) 0%, var(--primary-strong) 100%); padding: 64px 40px; border-radius: 28px; text-align: center; color: white;">
+    <h2 style="color: white; margin-bottom: 16px;">Chcete být další spokojený klient?</h2>
+    <p style="font-size: 1.1rem; margin-bottom: 32px; opacity: 0.9;">Kontaktujte nás a my vám pomůžeme s prodejem, koupí nebo pronájmem nemovitosti.</p>
+    <a class="button" href="/kontakt" style="background: white; color: var(--primary); box-shadow: 0 14px 32px rgba(0, 0, 0, 0.2);">Kontaktujte nás</a>
+  </section>
+</main>
+
+<%- include('partials/footer') %>

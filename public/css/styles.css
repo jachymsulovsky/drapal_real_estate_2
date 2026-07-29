@@ -398,10 +398,13 @@ textarea {
   border-radius: 8px;
   overflow: hidden;
   border: 1px solid var(--line);
+  position: relative;
+  background: var(--surface);
 }
 
 .large-map {
   min-height: 460px;
+  height: 460px;
 }
 
 .contact-panel {
@@ -978,5 +981,38 @@ th {
   th,
   td {
     min-width: 160px;
+  }
+}
+
+/*
+  ============================================================
+  STICKY CTA — Pevné kontaktní tlačítko na mobilu
+  ============================================================
+*/
+@media (max-width: 768px) {
+  .sticky-cta {
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 9998;
+    background: var(--surface);
+    border-top: 1px solid var(--line);
+    padding: 10px 16px;
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1);
+    gap: 10px;
+  }
+
+  .sticky-cta .button {
+    flex: 1;
+    text-align: center;
+    text-decoration: none;
+  }
+
+  .sticky-cta .button.ghost {
+    background: transparent;
+    color: var(--text);
+    border: 1px solid var(--line);
   }
 }

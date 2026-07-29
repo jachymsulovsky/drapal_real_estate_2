@@ -146,10 +146,16 @@ async function login(req, res) {
       return res.redirect('/admin/login');
     }
 
-    req.session.user = { id: user.id, username: user.username };
+    // Uložení uživatelských dat do session včetně role a agent_id
+    req.session.user = {
+      id: user.id,
+      username: user.username,
+      role: user.role || 'admin',
+      agent_id: user.agent_id || null
+    };
 
     // Audit log – úspěšné přihlášení (chybu nepropagujeme, pouze zalogujeme)
-    auditLog(req, 'login', 'user', user.id, `Úspěšné přihlášení uživatele "${user.username}"`).catch((logErr) => {
+    auditLog(req, 'login', 'user', user.id, `Úspěšné přihlášení uživatele "${user.username}" (role: ${user.role || 'admin'})`).catch((logErr) => {
       console.error('Chyba při zápisu audit logu:', logErr);
     });
 
@@ -163,7 +169,10 @@ async function login(req, res) {
         console.error('Chyba při ukládání session:', saveErr);
         return res.redirect('/admin/login');
       }
-      return res.redirect('/admin');
+      
+      // Redirect podle role
+      const redirectUrl = user.role === 'agent' ? '/agent/dashboard' : '/admin';
+      return res.redirect(redirectUrl);
     });
   });
 }
@@ -540,6 +549,232 @@ async function updateAccount(req, res) {
   });
 }
 
+// ============================================================
+// ABOUT SEKCE
+// ============================================================
+
+async function aboutSection(req, res) {
+  const about = await get('SELECT * FROM about_section WHERE id = 1');
+  const team = await all('SELECT * FROM team_members ORDER BY display_order, id');
+  res.render('admin/about', {
+    title: 'O nás',
+    about: about || {},
+    team
+  });
+}
+
+async function updateAboutSection(req, res) {
+  const fields = [
+    'title', 'subtitle', 'content', 'mission_title', 'mission_content',
+    'values_title', 'values_content', 'experience_years', 'properties_sold',
+    'happy_clients', 'team_members'
+  ];
+
+  for (const field of fields) {
+    const value = field.includes('years') || field.includes('sold') || field.includes('clients') || field.includes('members')
+      ? validateNumeric(req.body[field], 0)
+      : clean(req.body[field]);
+    await run(
+      `INSERT INTO about_section (id, ${field}) VALUES (1, ?)
+       ON CONFLICT(id) DO UPDATE SET ${field} = excluded.${field}`,
+      [value]
+    );
+  }
+
+  await auditLog(req, 'update', 'about_section', 1, 'Aktualizována sekce O nás');
+  req.session.flash = { type: 'success', message: 'Sekce O nás byla uložena.' };
+  res.redirect('/admin/about');
+}
+
+// ============================================================
+// TESTIMONIALS (REFERENCE)
+// ============================================================
+
+async function testimonials(req, res) {
+  const items = await all('SELECT * FROM testimonials ORDER BY display_order, created_at DESC');
+  res.render('admin/testimonials', {
+    title: 'Reference',
+    testimonials: items
+  });
+}
+
+async function createTestimonial(req, res) {
+  const { client_name, content, rating, property_type } = req.body;
+  
+  if (!client_name || !content) {
+    req.session.flash = { type: 'error', message: 'Vyplňte jméno klienta a text reference.' };
+    return res.redirect('/admin/testimonials');
+  }
+
+  const photoUrl = uploadedFileUrl(req.files, 'photos') || '';
+  const displayOrder = await get('SELECT COUNT(*) AS count FROM testimonials');
+  
+  await run(
+    `INSERT INTO testimonials (client_name, client_photo_url, content, rating, property_type, display_order)
+     VALUES (?, ?, ?, ?, ?, ?)`,
+    [
+      clean(client_name),
+      photoUrl,
+      clean(content),
+      validateNumeric(rating, 5),
+      clean(property_type),
+      displayOrder.count
+    ]
+  );
+
+  await auditLog(req, 'create', 'testimonial', null, `Přidána reference od "${clean(client_name)}"`);
+  req.session.flash = { type: 'success', message: 'Reference byla přidána.' };
+  res.redirect('/admin/testimonials');
+}
+
+async function deleteTestimonial(req, res) {
+  const testimonial = await get('SELECT client_name FROM testimonials WHERE id = ?', [req.params.id]);
+  await run('DELETE FROM testimonials WHERE id = ?', [req.params.id]);
+  await auditLog(req, 'delete', 'testimonial', req.params.id, `Smazána reference od "${testimonial?.client_name || 'neznámý'}"`);
+  req.session.flash = { type: 'success', message: 'Reference byla smazána.' };
+  res.redirect('/admin/testimonials');
+}
+
+// ============================================================
+// PROCESS STEPS (PROCES SPOLUPRÁCE)
+// ============================================================
+
+async function processSteps(req, res) {
+  const steps = await all('SELECT * FROM process_steps ORDER BY display_order, step_number');
+  res.render('admin/process', {
+    title: 'Proces spolupráce',
+    steps
+  });
+}
+
+async function updateProcessSteps(req, res) {
+  // Smazat všechny existující kroky a vytvořit nové
+  await run('DELETE FROM process_steps');
+  
+  const stepNumbers = req.body.step_number || [];
+  const titles = req.body.step_title || [];
+  const descriptions = req.body.step_description || [];
+  const icons = req.body.step_icon || [];
+
+  for (let i = 0; i < titles.length; i++) {
+    if (titles[i] && descriptions[i]) {
+      await run(
+        `INSERT INTO process_steps (step_number, title, description, icon, display_order)
+         VALUES (?, ?, ?, ?, ?)`,
+        [
+          validateNumeric(stepNumbers[i], i + 1),
+          clean(titles[i]),
+          clean(descriptions[i]),
+          clean(icons[i]) || '✓',
+          i + 1
+        ]
+      );
+    }
+  }
+
+  await auditLog(req, 'update', 'process_steps', null, 'Aktualizován proces spolupráce');
+  req.session.flash = { type: 'success', message: 'Proces spolupráce byl uložen.' };
+  res.redirect('/admin/process');
+}
+
+// ============================================================
+// BLOG
+// ============================================================
+
+async function blogPosts(req, res) {
+  const posts = await all('SELECT * FROM blog_posts ORDER BY created_at DESC');
+  res.render('admin/blog', {
+    title: 'Blog',
+    posts
+  });
+}
+
+async function newBlogPost(req, res) {
+  res.render('admin/blog-form', {
+    title: 'Nový článek',
+    post: {},
+    action: '/admin/blog',
+    errors: []
+  });
+}
+
+async function createBlogPost(req, res) {
+  const { title, excerpt, content, author_name } = req.body;
+  
+  if (!title || !content) {
+    req.session.flash = { type: 'error', message: 'Vyplňte název a obsah článku.' };
+    return res.redirect('/admin/blog/new');
+  }
+
+  const slug = slugify(title);
+  const featuredImage = uploadedFileUrl(req.files, 'images') || '';
+  
+  await run(
+    `INSERT INTO blog_posts (title, slug, excerpt, content, featured_image_url, author_name)
+     VALUES (?, ?, ?, ?, ?, ?)`,
+    [
+      clean(title),
+      slug,
+      clean(excerpt),
+      clean(content),
+      featuredImage,
+      clean(author_name) || 'Drápal Real Estate'
+    ]
+  );
+
+  await auditLog(req, 'create', 'blog_post', null, `Vytvořen článek "${clean(title)}"`);
+  req.session.flash = { type: 'success', message: 'Článek byl přidán.' };
+  res.redirect('/admin/blog');
+}
+
+async function editBlogPost(req, res) {
+  const post = await get('SELECT * FROM blog_posts WHERE id = ?', [req.params.id]);
+  if (!post) return res.redirect('/admin/blog');
+  
+  res.render('admin/blog-form', {
+    title: 'Upravit článek',
+    post,
+    action: `/admin/blog/${post.id}`,
+    errors: []
+  });
+}
+
+async function updateBlogPost(req, res) {
+  const { title, excerpt, content, author_name } = req.body;
+  
+  if (!title || !content) {
+    req.session.flash = { type: 'error', message: 'Vyplňte název a obsah článku.' };
+    return res.redirect(`/admin/blog/${req.params.id}/edit`);
+  }
+
+  const slug = slugify(title);
+  const featuredImage = uploadedFileUrl(req.files, 'images') || '';
+  
+  let sql = `UPDATE blog_posts SET title = ?, slug = ?, excerpt = ?, content = ?, author_name = ?, updated_at = CURRENT_TIMESTAMP`;
+  const params = [clean(title), slug, clean(excerpt), clean(content), clean(author_name) || 'Drápal Real Estate'];
+  
+  if (featuredImage) {
+    sql += ', featured_image_url = ?';
+    params.push(featuredImage);
+  }
+  
+  sql += ' WHERE id = ?';
+  params.push(req.params.id);
+  
+  await run(sql, params);
+  await auditLog(req, 'update', 'blog_post', req.params.id, `Upraven článek "${clean(title)}"`);
+  req.session.flash = { type: 'success', message: 'Článek byl aktualizován.' };
+  res.redirect('/admin/blog');
+}
+
+async function deleteBlogPost(req, res) {
+  const post = await get('SELECT title FROM blog_posts WHERE id = ?', [req.params.id]);
+  await run('DELETE FROM blog_posts WHERE id = ?', [req.params.id]);
+  await auditLog(req, 'delete', 'blog_post', req.params.id, `Smazán článek "${post?.title || 'neznámý'}"`);
+  req.session.flash = { type: 'success', message: 'Článek byl smazán.' };
+  res.redirect('/admin/blog');
+}
+
 module.exports = {
   loginPage,
   login,
@@ -560,5 +795,18 @@ module.exports = {
   webSettings,
   updateWebSettings,
   account,
-  updateAccount
+  updateAccount,
+  aboutSection,
+  updateAboutSection,
+  testimonials,
+  createTestimonial,
+  deleteTestimonial,
+  processSteps,
+  updateProcessSteps,
+  blogPosts,
+  newBlogPost,
+  createBlogPost,
+  editBlogPost,
+  updateBlogPost,
+  deleteBlogPost
 };

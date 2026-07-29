@@ -1,0 +1,34 @@
+<%- include('../partials/admin-head') %>
+<%- include('../partials/admin-nav') %>
+<section class="admin-header">
+  <div>
+    <p class="eyebrow">Agent</p>
+    <h1>Dashboard</h1>
+  </div>
+</section>
+
+<section class="stats-grid">
+  <div><span>Moje nemovitosti</span><strong><%= stats.myProperties %></strong></div>
+  <div><span>Aktivní nabídky</span><strong><%= stats.activeProperties %></strong></div>
+  <div><span>Všechny poptávky</span><strong><%= stats.totalInquiries %></strong></div>
+</section>
+
+<section class="admin-card">
+  <h2>Poslední poptávky</h2>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Jméno</th><th>Předmět</th><th>Stav</th><th>Datum</th></tr></thead>
+      <tbody>
+        <% recentInquiries.forEach((item) => { %>
+          <tr>
+            <td><%= item.name %></td>
+            <td><%= item.subject %></td>
+            <td><span class="badge"><%= item.handled ? 'Vyřízeno' : 'Nové' %></span></td>
+            <td><%= item.created_at %></td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+</section>
+<%- include('../partials/admin-foot') %>

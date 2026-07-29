@@ -15,6 +15,10 @@ const contactLimiter = rateLimit({
 });
 
 router.get('/', publicController.home);
+router.get('/o-nas', publicController.aboutPage);
+router.get('/reference', publicController.testimonialsPage);
+router.get('/blog', publicController.blogPage);
+router.get('/blog/:slug', publicController.blogPostDetail);
 router.get('/nemovitost/:slug', publicController.propertyDetail);
 router.get('/kontakt', publicController.contactPage);
 router.get('/ochrana-osobnich-udaju', publicController.privacyPolicyPage);

@@ -1,0 +1,98 @@
+<%- include('../partials/admin-head') %>
+<%- include('../partials/admin-nav') %>
+<section class="admin-header">
+  <div>
+    <p class="eyebrow">Agent</p>
+    <h1><%= title %></h1>
+  </div>
+</section>
+
+<% if (errors && errors.length) { %>
+  <div class="flash error">
+    <% errors.forEach((error) => { %>
+      <p><%= error %></p>
+    <% }) %>
+  </div>
+<% } %>
+
+<form class="admin-form" method="post" action="<%= action %>" enctype="multipart/form-data">
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+  
+  <section class="admin-card">
+    <h2>Základní informace</h2>
+    <div class="form-grid">
+      <label>Nadpis<input name="title" value="<%= property.title || '' %>" required></label>
+      <label>Cena (Kč)<input type="number" name="price" value="<%= property.price || '' %>" required></label>
+      <label>Lokalita<input name="location" value="<%= property.location || '' %>" required></label>
+      <label>Typ<select name="type" required>
+        <option value="">Vyberte typ</option>
+        <option value="Byt" <%= property.type === 'Byt' ? 'selected' : '' %>>Byt</option>
+        <option value="Dům" <%= property.type === 'Dům' ? 'selected' : '' %>>Dům</option>
+        <option value="Pozemek" <%= property.type === 'Pozemek' ? 'selected' : '' %>>Pozemek</option>
+        <option value="Komerční" <%= property.type === 'Komerční' ? 'selected' : '' %>>Komerční</option>
+      </select></label>
+      <label>Stav<select name="status" required>
+        <option value="Na prodej" <%= property.status === 'Na prodej' ? 'selected' : '' %>>Na prodej</option>
+        <option value="Pronájem" <%= property.status === 'Pronájem' ? 'selected' : '' %>>Pronájem</option>
+        <option value="Prodáno" <%= property.status === 'Prodáno' ? 'selected' : '' %>>Prodáno</option>
+      </select></label>
+      <label>Adresa<input name="address" value="<%= property.address || '' %>" required></label>
+    </div>
+    <label>Popis<textarea name="description" rows="6" required><%= property.description || '' %></textarea></label>
+  </section>
+
+  <section class="admin-card">
+    <h2>Detaily</h2>
+    <div class="form-grid">
+      <label>Rozloha (m²)<input name="area" value="<%= property.area || '' %>"></label>
+      <label>Vlastnictví<select name="ownership">
+        <option value="">Vyberte</option>
+        <option value="Osobní" <%= property.ownership === 'Osobní' ? 'selected' : '' %>>Osobní</option>
+        <option value="Družstevní" <%= property.ownership === 'Družstevní' ? 'selected' : '' %>>Družstevní</option>
+      </select></label>
+      <label>Energetická třída<select name="energy_rating">
+        <option value="">Vyberte</option>
+        <option value="A" <%= property.energy_rating === 'A' ? 'selected' : '' %>>A</option>
+        <option value="B" <%= property.energy_rating === 'B' ? 'selected' : '' %>>B</option>
+        <option value="C" <%= property.energy_rating === 'C' ? 'selected' : '' %>>C</option>
+        <option value="D" <%= property.energy_rating === 'D' ? 'selected' : '' %>>D</option>
+        <option value="E" <%= property.energy_rating === 'E' ? 'selected' : '' %>>E</option>
+        <option value="F" <%= property.energy_rating === 'F' ? 'selected' : '' %>>F</option>
+        <option value="G" <%= property.energy_rating === 'G' ? 'selected' : '' %>>G</option>
+      </select></label>
+      <label>Stav konstrukce<select name="construction">
+        <option value="">Vyberte</option>
+        <option value="Novostavba" <%= property.construction === 'Novostavba' ? 'selected' : '' %>>Novostavba</option>
+        <option value="Rekonstrukce" <%= property.construction === 'Rekonstrukce' ? 'selected' : '' %>>Rekonstrukce</option>
+        <option value="Původní stav" <%= property.construction === 'Původní stav' ? 'selected' : '' %>>Původní stav</option>
+      </select></label>
+    </div>
+    <label>Vybavení<textarea name="accessories" rows="3"><%= property.accessories || '' %></textarea></label>
+    <label>Infrastruktura<textarea name="infrastructure" rows="3"><%= property.infrastructure || '' %></textarea></label>
+    <label>Přístup k nemovitosti<textarea name="other" rows="3"><%= property.other || '' %></textarea></label>
+  </section>
+
+  <section class="admin-card">
+    <h2>Poloha</h2>
+    <div class="form-grid">
+      <label>Zeměpisná šířka (lat)<input type="number" step="any" name="lat" value="<%= property.lat || '' %>" required></label>
+      <label>Zeměpisná délka (lng)<input type="number" step="any" name="lng" value="<%= property.lng || '' %>" required></label>
+    </div>
+  </section>
+
+  <section class="admin-card">
+    <h2>Obrázky</h2>
+    <% if (property.images && property.images.length) { %>
+      <div class="thumb-row">
+        <% property.images.forEach((img) => { %>
+          <img src="<%= img.image_url %>" alt="<%= img.alt %>">
+        <% }) %>
+      </div>
+    <% } %>
+    <label>Nahrát obrázky<input type="file" name="images" accept="image/*" multiple></label>
+  </section>
+
+  <button class="button" type="submit">Uložit nemovitost</button>
+  <a class="button secondary" href="/agent/properties">Zrušit</a>
+</form>
+<%- include('../partials/admin-foot') %>

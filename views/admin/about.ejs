@@ -1,0 +1,47 @@
+<%- include('../partials/admin-head') %>
+<%- include('../partials/admin-nav') %>
+<section class="admin-header">
+  <div>
+    <p class="eyebrow">Obsah webu</p>
+    <h1>O nás</h1>
+  </div>
+</section>
+
+<form class="admin-form" method="post" action="/admin/about">
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+  
+  <section class="admin-card">
+    <h2>Základní informace</h2>
+    <div class="form-grid">
+      <label>Nadpis<input name="title" value="<%= about.title || '' %>" required></label>
+      <label>Podnadpis<input name="subtitle" value="<%= about.subtitle || '' %>" required></label>
+    </div>
+    <label>Obsah stránky<textarea name="content" rows="6" required><%= about.content || '' %></textarea></label>
+  </section>
+
+  <section class="admin-card">
+    <h2>Naše mise</h2>
+    <label>Nadpis mise<input name="mission_title" value="<%= about.mission_title || '' %>" required></label>
+    <label>Obsah mise<textarea name="mission_content" rows="4" required><%= about.mission_content || '' %></textarea></label>
+  </section>
+
+  <section class="admin-card">
+    <h2>Naše hodnoty</h2>
+    <label>Nadpis hodnot<input name="values_title" value="<%= about.values_title || '' %>" required></label>
+    <label>Obsah hodnot<textarea name="values_content" rows="4" required><%= about.values_content || '' %></textarea></label>
+  </section>
+
+  <section class="admin-card">
+    <h2>Statistiky</h2>
+    <div class="form-grid">
+      <label>Roky zkušeností<input type="number" name="experience_years" value="<%= about.experience_years || 0 %>" min="0" required></label>
+      <label>Počet prodaných nemovitostí<input type="number" name="properties_sold" value="<%= about.properties_sold || 0 %>" min="0" required></label>
+      <label>Spokojených klientů<input type="number" name="happy_clients" value="<%= about.happy_clients || 0 %>" min="0" required></label>
+      <label>Počet členů týmu<input type="number" name="team_members" value="<%= about.team_members || 0 %>" min="0" required></label>
+    </div>
+  </section>
+
+  <button class="button" type="submit">Uložit sekci O nás</button>
+</form>
+
+<%- include('../partials/admin-foot') %>
